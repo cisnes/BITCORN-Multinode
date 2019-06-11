@@ -17,6 +17,7 @@ If you need support, contact Pineapple or MrAnthony in the <a href="https://disc
 **Vultr** is required for this script to work. Make sure to click "IPv6 during installation of the server.
 
 Feel free to use out reflink to signup w/ vultr:
+
 <a href="https://www.vultr.com/?ref=7755704"><img src="https://www.vultr.com/media/banner_2.png" width="468" height="60"></a>
 
 ---
@@ -58,15 +59,20 @@ Below is a guide meant to help you install your masternodes
 
 ***Step 5***
 * Choose a server size: We recommend to purchase the $5 Vultr VPS with 1GB of Ram, this will allow you to install around 8 or 9 masternodes on this 1 VPS.
-![Example-OS](https://i.imgur.com/9CIYekk.png)
+![Example-OS](https://i.imgur.com/WRiYXxt.png)
 ***
 
 ***Step 6***
+* Under Additional Features tick Enable IPv6
+![Example-hostname](https://i.imgur.com/jb05zjj.png)
+***
+
+***Step 7***
 * Set a Server Hostname & Label (name it whatever you want)
 ![Example-hostname](https://i.imgur.com/UxGFmqD.png)
 ***
 
-***Step 7***
+***Step 8***
 * Click "Deploy now"
 
 ### 0.1 - Connect to the VPS 
