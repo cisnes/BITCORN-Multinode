@@ -1,43 +1,16 @@
-# Multinode
+# Bitcorn Multinode
 
 ----
 ## What is multinode?
 
 
-The **Multinode** scripts is a collection of utilities to manage, setup and update masternode instances.
+The **Multinode** script is a collection of utilities to manage, setup and update multiple Bitcorn masternodes on 1 VPS.
 
-The core of this application is forked from an abandoned project, and we've been passionate about making this even better by including more features and coins/tokens. 
-We are quite confident this is the single best and almost effortless way to setup different crypto masternodes, without bothering too much about the setup part.
+Using this multinode script you are able to have around 8 or 9 Bitcorn masternodes running on 1 $5 1GB Ram Vultr VPS Server.
 
-If this script helped you in any way, please contribute some feedback. If you need support, contact Brett or Pineapple in either of these Discords: <a href="https://discord.gg/PpxbJ3u">Pure Investments</a>   or   <a href="https://discord.gg/">CTTV</a>
+If you need support, contact Pineapple or MrAnthony in the <a href="https://discord.gg/eJQJeBB">CCTV Discord</a>
 
-## Supported masternode projects
-
-All PIVX based coins can be added to this reository. Current supported and updated coins are:
-
-* BitCORN (CORN)
-* LemonAd (LAD)
-* Carbon Zero (CZE)
-* Find Your Developer (FYD)
 ---
-
-# Donations
-
-This is licenced for free, but donations are very welcome. It will help me find motivation to update and improve it. This script will probably save you tons of money in the long run as you need few VPSs as well! 
-
-Bitcoin:
-
-    1HUpAVhahnnHxAFTWzXX4t8SNza5qES1aS
-
-Ethereum:
-
-    0x67b06be05a0e93fb58b44c561ae3e9440e6c4a47
-
-DOGE:
-    
-    DDiwzGsPeqQTTuSQX5wyijiEPaFDZvJ9hG
-
-
 
 ## Recommended VPS provider
 
@@ -49,8 +22,6 @@ Feel free to use out reflink to signup and receive a bonus w/ vultr:
 ---
 
 ## About / Background
-
-After doing countless masternode installations and administrating the past two years, we decided to share our modified script with the public.
 
 Comparing with building from source manually, you will benefit from using this script in the following way(s):
 
@@ -65,23 +36,25 @@ Comparing with building from source manually, you will benefit from using this s
 
 # Installation
 
-Below is a guide meant to help you install your masternodes smooth like butter
+Below is a guide meant to help you install your masternodes
 
 ### 0.0 - Create VPS
 
 Only Vultr servers are tested with this script, so it's highly recommended you use their platform for this. During the installation, it's crucial to check "Enable IPv6" as we will be using this. When done, proceed to the next step. 
 
+We recommend to purchase the $5 Vultr VPS with 1GB of Ram, this will allow you to install around 8 or 9 masternodes on this 1 VPS.
+
 ### 1.0 - Clone and open project on your VPS
 
 VPS:
 
-    git clone https://github.com/cisnes/multinode.git && cd multinode
+    git clone https://github.com/BITCORNProject/BITCORN-Multinode.git && cd BITCORN-Multinode
 
 
 
 ## IMPORTANT
 
-If you already have private keys and txhashes from your existing servers you want to migrate over to the script, you can reuse these. Just shut down the old servers and skip to step 2.0.
+If you already have private keys and txhashes from your existing masternodes you want to migrate over to the script, you can reuse these. Just shut down the old servers and skip to step 2.0.
 
 ### 1.1 - Send collateral to your MN adresses
 
@@ -112,7 +85,7 @@ The script you will be using is in the *multinode* folder and is called install.
 
 The following script will install **3 bitcorn** masternodes using **IPv6**.
 
-    ./install.sh -p bitcorn -c 4 -n 6
+    ./install.sh -p bitcorn -c 3 -n 6
 
 Take note of this: The **count/-c** is the **total** number of masternodes of that coin you want to have installed on the VPS. If you already have 3 MNs and want to install 3 more, you need to use `-c 6`. The first 3 masternodes are not affected. 
 
