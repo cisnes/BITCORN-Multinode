@@ -86,6 +86,7 @@ Below is a guide meant to help you install your masternodes
 
 ***Step 2***
 * Open the bitvise application, Click New Profile and fill in the "Hostname" box with the IP of your VPS then Port number "22".
+
 ![Example-PuttyInstaller](https://i.imgur.com/uvc0Ysp.png)
 ***
 
