@@ -59,11 +59,13 @@ Below is a guide meant to help you install your masternodes
 
 ***Step 5***
 * Choose a server size: We recommend to purchase the $5 Vultr VPS with 1GB of Ram, this will allow you to install around 8 or 9 masternodes on this 1 VPS.
+
 ![Example-OS](https://i.imgur.com/WRiYXxt.png)
 ***
 
 ***Step 6***
 * Under Additional Features tick Enable IPv6
+
 ![Example-hostname](https://i.imgur.com/jb05zjj.png)
 ***
 
