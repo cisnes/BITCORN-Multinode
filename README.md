@@ -6,7 +6,7 @@
 
 The **Multinode** script is a collection of utilities to manage, setup and update multiple Bitcorn masternodes on 1 VPS.
 
-Using this multinode script you are able to have around 8 or 9 Bitcorn masternodes running on 1 $5 1GB Ram Vultr VPS Server.
+Using this multinode script you are able to have around 8 or 9 Bitcorn masternodes running on one $5 1GB Ram Vultr VPS Server.
 
 If you need support, contact Pineapple or MrAnthony in the <a href="https://discord.gg/eJQJeBB">CCTV Discord</a>
 
@@ -14,18 +14,16 @@ If you need support, contact Pineapple or MrAnthony in the <a href="https://disc
 
 ## Recommended VPS provider
 
-**Vultr** is highly recommended for this kind of setup as thats what we are using for testing and personal use. Make sure to click "IPv6 during installation of the server and you should be good to go. 
+**Vultr** is required for this script to work. Make sure to click "IPv6 during installation of the server.
 
-Feel free to use out reflink to signup and receive a bonus w/ vultr:
+Feel free to use out reflink to signup w/ vultr:
 <a href="https://www.vultr.com/?ref=7755704"><img src="https://www.vultr.com/media/banner_2.png" width="468" height="60"></a>
 
 ---
 
-## About / Background
+## Features of Multinode
 
-Comparing with building from source manually, you will benefit from using this script in the following way(s):
-
-* 100% auto-compilation and 99% of configuration on the masternode side of things. It is currently only tested on a vultr VPS but should work almost anywhere where IPv6 addresses are available
+* 100% auto-compilation and 99% of configuration on the masternode side of things.
 * Developed with 16.04 Ubuntu versions
 * Installs 1-100 (or more!) masternodes in parallel on one machine, with individual config and data
 * Compilation is currently from source for the desired git repo tag (configurable via config files)
@@ -40,16 +38,73 @@ Below is a guide meant to help you install your masternodes
 
 ### 0.0 - Create VPS
 
-Only Vultr servers are tested with this script, so it's highly recommended you use their platform for this. During the installation, it's crucial to check "Enable IPv6" as we will be using this. When done, proceed to the next step. 
+***Step 1***
+* Register at [Vultr](https://www.vultr.com/?ref=7755704)
+***
 
-We recommend to purchase the $5 Vultr VPS with 1GB of Ram, this will allow you to install around 8 or 9 masternodes on this 1 VPS.
+***Step 2***
+* After you have added funds to your account go [here](https://my.vultr.com/deploy/) to create your Server
+***
+
+***Step 3***
+* Choose a server location (preferably somewhere close to you)
+![Example-Location](https://i.imgur.com/ozi7Bkr.png)
+***
+
+***Step 4***
+* Choose a server type: Ubuntu 16.04
+![Example-OS](https://i.imgur.com/aSMqHUK.png)
+***
+
+***Step 5***
+* Choose a server size: We recommend to purchase the $5 Vultr VPS with 1GB of Ram, this will allow you to install around 8 or 9 masternodes on this 1 VPS.
+![Example-OS](https://i.imgur.com/9CIYekk.png)
+***
+
+***Step 6***
+* Set a Server Hostname & Label (name it whatever you want)
+![Example-hostname](https://i.imgur.com/UxGFmqD.png)
+***
+
+***Step 7***
+* Click "Deploy now"
+
+### 0.1 - Connect to the VPS 
+
+***Step 1***
+* Copy your VPS IP (find this within the server tab @ Vultr and clicking on your server.)
+![Example-Vultr](https://i.imgur.com/spEVVCy.png)
+***
+
+***Step 2***
+* Open the bitvise application, Click New Profile and fill in the "Hostname" box with the IP of your VPS then Port number "22".
+![Example-PuttyInstaller](https://i.imgur.com/uvc0Ysp.png)
+***
+
+***Step 3***
+* Input the username "root" and copy your password from the VULTR Server Page.  
+* If you want you can save your password to your Bitvise profile just tick the Store Encrypted password in profile.
+![Example-RootPass](https://i.imgur.com/JnXQXav.png)
+![Example-BitvisePass](https://i.imgur.com/BxVCWFA.png)
+***
+
+***Step 4***
+* Save your profile and click "Log in" at the bottom of Bitvise
+
+![Example-Save](https://i.imgur.com/uMwBz0N.png)
+![Example-LoginBitvise](https://i.imgur.com/BJAGVr6.png)
+***
+
+***Step 5***
+* Click login at the bottom of the Bitvise client.
+![Example-LoginBitvise](https://i.imgur.com/BJAGVr6.png)
+***
 
 ### 1.0 - Clone and open project on your VPS
 
-VPS:
+In the Bitvise client enter the following command
 
     git clone https://github.com/BITCORNProject/BITCORN-Multinode.git && cd BITCORN-Multinode
-
 
 
 ## IMPORTANT
@@ -81,7 +136,7 @@ And copy the Txhash and OutputID to masternodes.conf and past them in the correc
 ### 2.0 Install the masternodes
 By now you have prepared your wallet with the necessary variables and it's time to initialize script and make masternodes. 
 
-The script you will be using is in the *multinode* folder and is called install.sh. You're calling this by using ./ as a prefix. The first flag -p is the project. Currently supported projects is stated further above in the readme file. The second flag -c is the count. This is the total number of MNs you want to have installed. And the third flag is -n which is indicating you will be using network settings for IPv6 (required to have multiple MNs)
+The script you will be using is in the *BITCORN-Multinode* folder and is called install.sh. You're calling this by using ./ as a prefix. The first flag -p is the project. Currently supported projects is stated further above in the readme file. The second flag -c is the count. This is the total number of MNs you want to have installed. And the third flag is -n which is indicating you will be using network settings for IPv6 (required to have multiple MNs)
 
 The following script will install **3 bitcorn** masternodes using **IPv6**.
 
