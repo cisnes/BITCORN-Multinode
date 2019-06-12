@@ -142,6 +142,7 @@ If you already have private keys and txhashes from your existing masternodes you
 ***
 
 ***Step 5***
+
 Type the command below and press enter
 
     masternode genkey
@@ -150,6 +151,7 @@ Run this command for each of your new masternodes, and paste these into the text
 ***
 
 ***Step 6***
+
 Back in the console type the command below and press enter
 
     masternode outputs
@@ -167,6 +169,7 @@ Back in the console type the command below and press enter
 ***
 
 ***Step 9***
+
 Enter the following data in this file for every masternode we want to setup as follows:
 
     MN01 IPGOESHERE PRIVATEKEYGOESHERE TXHASHGOESHERE OUTPUTIDGOESHERE
