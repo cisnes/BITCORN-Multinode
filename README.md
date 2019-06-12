@@ -114,7 +114,7 @@ Paste the code below into the Bitvise terminal then press enter
 
     git clone https://github.com/BITCORNProject/BITCORN-Multinode.git && cd BITCORN-Multinode
 
-
+![Example-clone](https://i.imgur.com/tAxaz2I.png)
 ## IMPORTANT
 
 If you already have private keys and txhashes from your existing masternodes you want to migrate over to the script, you can reuse these. Just shut down the old servers and skip to step 2.0.
