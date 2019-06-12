@@ -114,7 +114,7 @@ Paste the code below into the Bitvise terminal then press enter
 
     git clone https://github.com/BITCORNProject/BITCORN-Multinode.git && cd BITCORN-Multinode
 
-The first installation of this script will take up to 30mins to get everything set up. Later installations will take a couple of minutes
+The first installation of this script will take up to 30mins to get everything set up, so be patient. Later installations of additional masternodes will take a couple of minutes.
 
 ## IMPORTANT
 
@@ -202,6 +202,8 @@ The following script will install **3 bitcorn** masternodes using **IPv6**.
     ./install.sh -p bitcorn -c 3 -n 6
 
 Take note of this: The **count/-c** is the **total** number of masternodes of that coin you want to have installed on the VPS. If you already have 3 MNs and want to install 3 more, you need to use `-c 6`. The first 3 masternodes are not affected. 
+
+We recommend to only install 3 masternodes at once, best to install masternodes in batches of 3 as this process can take a long time to sync and download the entire blockchain for each masternode. The more masternodes you sync at once the longer this process will take.
 
 
 ### 2.1 Enter private keys
