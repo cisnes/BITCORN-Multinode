@@ -245,12 +245,11 @@ This is done using this command
 
 
 ### 2.4 Check masternode status
-You can check the status of your coin normally, but now you need to specify which coin you want to check.
+You can check the status of the blockchain sync process with this command
 
     bitcorn-cli -conf=/etc/masternodes/bitcorn_n1.conf getinfo
 
-Replace getinfo with whatever command you would normally use with the CLI. Replace the number with whatever MN you want to check. 
-
+You can use this command for each individual masternode number, just replace the number (n1) with whatever MN you want to check. We need to wait for each masternode to sync and download up to the latest block.
 
 ### 2.5 Check block-sync
 The blockchain needs to be synced before you can start your MNs through the wallet. Do this by typing 
