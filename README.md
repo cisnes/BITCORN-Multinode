@@ -114,7 +114,6 @@ Paste the code below into the Bitvise terminal then press enter
 
     git clone https://github.com/BITCORNProject/BITCORN-Multinode.git && cd BITCORN-Multinode
 
-The first installation of this script will take up to 30mins to get everything set up, so be patient. Later installations of additional masternodes will take a couple of minutes.
 
 ## IMPORTANT
 
@@ -189,6 +188,8 @@ Click "File Save"
 
 ### 2.0 Install the masternodes
 By now you have prepared your wallet with the necessary variables and it's time to initialize script and make masternodes. 
+
+The first installation of this script will take up to 30mins to get everything set up, so be patient. Later installations of additional masternodes will take a couple of minutes.
 
 The script you will be using is in the *BITCORN-Multinode* folder and is called install.sh. You're calling this by using ./ as a prefix. The first flag -p is the project. The second flag -c is the count. This is the total number of MNs you want to have installed. And the third flag is -n which is indicating you will be using network settings for IPv6 (required to have multiple MNs)
 
