@@ -141,27 +141,19 @@ If you already have private keys and txhashes from your existing masternodes you
 ![Example-console](https://i.imgur.com/sXWA7Ym.png)
 ***
 
-***step 4***
-* Go to the console within the wallet, Tools > Debug Console 
-
-![Example-console](https://i.imgur.com/sXWA7Ym.png)
-***
-
 ***Step 5***
 * Type the command below and press enter
 
     masternode genkey
 
 Run this command for each of your new masternodes, and paste these into the text document you created earlier as we need them later
-![Example-outputs](https://i.imgur.com/gynQDX8.png)
 ***
 
 ***Step 6***
 * Back in the console type the command below and press enter
 
     masternode outputs
-
-![Example-outputs](https://i.imgur.com/gynQDX8.png)
+	
 ***
 
 ***Step 7***
