@@ -110,10 +110,11 @@ Below is a guide meant to help you install your masternodes
 
 ### 1.0 - Clone and open project on your VPS
 
-In the Bitvise client enter the following command
+Paste the code below into the Bitvise terminal then press enter
 
     git clone https://github.com/BITCORNProject/BITCORN-Multinode.git && cd BITCORN-Multinode
 
+The first installation of this script will take up to 30mins to get everything set up. Later installations will take a couple of minutes
 
 ## IMPORTANT
 
@@ -154,7 +155,6 @@ Take note of this: The **count/-c** is the **total** number of masternodes of th
 
 
 ### 2.1 Enter private keys
-The first installation of your wanted coin will take up to 30min to get everything set up. Later installations will take a couple of minutes
 
 During the end of the installation, it will ask for your private keys like this:
     
@@ -242,21 +242,21 @@ The _install.sh_ script support the following parameters:
 
 ## Adding more MNs to your already existing chunk of BITCORN masternodes
 
-The script works the following way that the -c(ount) flag defines the TOTAL number of MNs on the VPS. If you already have 4 masternodes and wish
-to install one more, you need to use the number 5 on the -c flag. Like so:
+The script works the following way that the -c(ount) flag defines the TOTAL number of MNs on the VPS. If you already have 3 masternodes and wish
+to install one more, you need to use the number 4 on the -c flag. Like so:
 
 ```bash
-./install.sh -p bitcorn -c 5 -n 6
+./install.sh -p bitcorn -c 4 -n 6
 ```
 
-This will install one more MN in addition to your old 4. The old MNs are not affected.
+This will install one more MN in addition to your old 3. The old MNs are not affected.
 
 After that, do the steps described in the main-installation part.
 
 
 # Troubleshooting
 
-### Error, couldn't connect to servre
+### Error, couldn't connect to server
 
 This error will appear if the daemon for that node is not running. The way to start the node is by running this command:
 
