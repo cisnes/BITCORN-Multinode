@@ -165,7 +165,7 @@ Back in the console type the command below and press enter
 
 ***Step 8***
 * Go to the tools tab within the wallet and click "Open Masternode Configuration File"
-![Example-create](https://i.imgur.com/hI4bMq5.png)
+![Example-create](https://i.imgur.com/7wVJrIG.png)
 ***
 
 ***Step 9***
