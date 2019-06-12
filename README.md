@@ -210,7 +210,7 @@ During the end of the installation, it will ask for your private keys like this:
 
 Here you enter the genkey from the masternodes.conf file which you made in step 5 of 1.1. 
 
-### 2.2 Find IP-adresses
+### 2.2 Find IP-addresses
 When the installation is done, you will be returned back to the normal console. Now you need to find the IP-adresses of each MN and paste them in masternodes.conf on your computer. 
 
 Navigate to the correct directory:
