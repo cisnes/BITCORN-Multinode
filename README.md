@@ -120,32 +120,82 @@ The first installation of this script will take up to 30mins to get everything s
 
 If you already have private keys and txhashes from your existing masternodes you want to migrate over to the script, you can reuse these. Just shut down the old servers and skip to step 2.0.
 
-### 1.1 - Send collateral to your MN adresses
+### 1.1 - Preparing the Local wallet
 
-Make one new receiving address for each of your new masternodes, and send **exactly** 10,000,000 to each address.
+***Step 1***
+* Download and install on the local PC / mac the Bitcorn wallet from [here](https://github.com/BITCORNProject/BITCORN/releases)
+***
 
-### 1.2 - Generate private keys for your masternodes
-In your wallet, open the debug console window and type:
+***Step 2***
+* Send EXACTLY 10,000,000 Bitcorn to a receive address within your wallet. You must wait for 16 confirmations on the transaction before the masternode can be started.
+* If you want to make a secondary address from inside the wallet, File > Reciveving Addresses > New.
+***
+
+***Step 3***
+* Create a text document to temporarily store information that you will need.
+***
+
+***step 4***
+* Go to the console within the wallet, Tools > Debug Console 
+
+![Example-console](https://i.imgur.com/sXWA7Ym.png)
+***
+
+***step 4***
+* Go to the console within the wallet, Tools > Debug Console 
+
+![Example-console](https://i.imgur.com/sXWA7Ym.png)
+***
+
+***Step 5***
+* Type the command below and press enter
 
     masternode genkey
 
-for each of your new masternodes, and copy these to your masternodes.conf file which you can find in your coins data-folder. 
+Run this command for each of your new masternodes, and paste these into the text document you created earlier as we need them later
+![Example-outputs](https://i.imgur.com/gynQDX8.png)
+***
 
-### 1.3 - Copy Txhash and OutputID to masternodes.conf
+***Step 6***
+* Back in the console type the command below and press enter
 
-Still in the debug console, type:
-    
     masternode outputs
 
-And copy the Txhash and OutputID to masternodes.conf and past them in the correct format. Note: The formatting of the file is very strict, and needs to be followed exactly as the example below. Do not have any empty lines in the project and do one MN per line:
+![Example-outputs](https://i.imgur.com/gynQDX8.png)
+***
+
+***Step 7***
+* Copy the long key (this is your transaction ID) and the 0 or 1 at the end (this is your output index)
+* Paste these into the text document you created earlier as you will need them in the next step.
+***
+
+***Step 8***
+* Go to the tools tab within the wallet and click "Open Masternode Configuration File"
+![Example-create](https://i.imgur.com/hI4bMq5.png)
+***
+
+***Step 9***
+* Enter the following data in this file for every masternode we want to setup as follows:
 
     MN01 IPGOESHERE PRIVATEKEYGOESHERE TXHASHGOESHERE OUTPUTIDGOESHERE
     MN02 IPGOESHERE PRIVATEKEYGOESHERE TXHASHGOESHERE OUTPUTIDGOESHERE
 
+Note: The formatting of the file is very strict, and needs to be followed exactly as the example below. Do not have any empty lines in the project and do one MN per line:
+
+* For `Alias` type something like "MN01" **don't use spaces**
+* The `Address` is the IPv6 and port of your server; make sure the port is set to **12211**.
+* The `Genkey` is your masternode Gen key output that we just generated from the console
+* The `TxHash` is the transaction ID/long key that you copied to the text file.
+* The `Output Index` is the 0 or 1 that you copied to your text file.
+![Example-create](https://i.imgur.com/zR8ImHQ.png)
+
+Click "File Save"
+***
+
 ### 2.0 Install the masternodes
 By now you have prepared your wallet with the necessary variables and it's time to initialize script and make masternodes. 
 
-The script you will be using is in the *BITCORN-Multinode* folder and is called install.sh. You're calling this by using ./ as a prefix. The first flag -p is the project. Currently supported projects is stated further above in the readme file. The second flag -c is the count. This is the total number of MNs you want to have installed. And the third flag is -n which is indicating you will be using network settings for IPv6 (required to have multiple MNs)
+The script you will be using is in the *BITCORN-Multinode* folder and is called install.sh. You're calling this by using ./ as a prefix. The first flag -p is the project. The second flag -c is the count. This is the total number of MNs you want to have installed. And the third flag is -n which is indicating you will be using network settings for IPv6 (required to have multiple MNs)
 
 The following script will install **3 bitcorn** masternodes using **IPv6**.
 
@@ -160,7 +210,7 @@ During the end of the installation, it will ask for your private keys like this:
     
     Genkey for MN01: 
 
-Here you enter the genkey from the masternodes.conf file which you made in step 1.2. 
+Here you enter the genkey from the masternodes.conf file which you made in step 5 of 1.1. 
 
 ### 2.2 Find IP-adresses
 When the installation is done, you will be returned back to the normal console. Now you need to find the IP-adresses of each MN and paste them in masternodes.conf on your computer. 
