@@ -177,7 +177,7 @@ Enter the following data in this file for every masternode we want to setup as f
 Note: The formatting of the file is very strict, and needs to be followed exactly as the example below. Do not have any empty lines in the project and do one MN per line:
 
 * For `Alias` type something like "MN01" **don't use spaces**
-* The `Address` is the IPv6 and port of your server; make sure the port is set to **12211**.
+* The `Address` is the IPv6 and port of your server; that you find in Step 2.2 below, make sure the port is set to **12211**.
 * The `Genkey` is your masternode Gen key output that we just generated from the console
 * The `TxHash` is the transaction ID/long key that you copied to the text file.
 * The `Output Index` is the 0 or 1 that you copied to your text file.
