@@ -98,10 +98,9 @@ Below is a guide meant to help you install your masternodes
 ***
 
 ***Step 4***
-* Save your profile and click "Log in" at the bottom of Bitvise
+* Save your profile
 
 ![Example-Save](https://i.imgur.com/uMwBz0N.png)
-![Example-LoginBitvise](https://i.imgur.com/BJAGVr6.png)
 ***
 
 ***Step 5***
@@ -184,6 +183,11 @@ Exit the editor by typing pressing CTRL X.
 If it ask you if you want to save changes, press N and click enter. 
 
 Do the same for the others as well. Just change the number after n. 
+
+Another way to find the IP addresses is by using the Bitvise SFTP window.
+Go to the /etc/masternodes folder and you can right click and edit the files to find the IPv6 address for each masternode.
+
+![Example-SFTP](https://i.imgur.com/2084pwz.png)
 
 ### 2.3 Start masternode services
 After you have copied all the IPs to your masternode.conf file and it's complete, it's time to start the MN service on the VPS.
