@@ -16,7 +16,7 @@ If you need support, contact Pineapple or MrAnthony in the <a href="https://disc
 
 **Vultr** is required for this script to work. Make sure to click "IPv6 during installation of the server.
 
-Feel free to use out reflink to signup w/ vultr:
+Feel free to use our referral link to signup w/ vultr:
 
 <a href="https://www.vultr.com/?ref=7755704"><img src="https://www.vultr.com/media/banner_2.png" width="468" height="60"></a>
 
@@ -122,7 +122,7 @@ If you already have private keys and txhashes from your existing masternodes you
 
 ### 1.1 - Send collateral to your MN adresses
 
-Make one new receiving address for each of your new masternodes, and send **exactly** the collateral to each of them. You can find collateral in the white paper/reward structure.
+Make one new receiving address for each of your new masternodes, and send **exactly** 10,000,000 to each address.
 
 ### 1.2 - Generate private keys for your masternodes
 In your wallet, open the debug console window and type:
@@ -263,5 +263,7 @@ And
     systemctl restart bitcorn_n2
 
 As always, replace "bitcorn" with your coin and the number with the node failing. This will kickstart it and it will say something like: "Bitcorn server starting" if it's successful.
+
+This error can also appear if you did not enter the correct Masternode private key, make sure you entered a valid key and try again.
 
 ### 
