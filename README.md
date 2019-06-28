@@ -8,7 +8,7 @@ The **Multinode** script is a collection of utilities to manage, setup and updat
 
 Using this multinode script you are able to have around 8 or 9 Bitcorn masternodes running on one $5 1GB Ram Vultr VPS Server.
 
-If you need support, contact Pineapple or MrAnthony in the <a href="https://discord.gg/eJQJeBB">CCTV Discord</a>
+If you need support, contact Pineapple or MrAnthony in the <a href="https://discord.gg/eJQJeBB">CTTV Discord</a>
 
 ---
 
