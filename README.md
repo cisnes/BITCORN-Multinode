@@ -259,7 +259,9 @@ The blockchain needs to be synced before you can start your MNs through the wall
 For all masternodes (again change the number to check all). When it's returning true on synced, you can proceed to next step
 
 ### 2.6 Start masternode from wallet
-Last step is starting the MN from the wallet. Do it in the debug console of the wallet like this:
+Before you start the masternodes from your local wallet, make sure you have closed the local wallet and re-opened it after saving your updated masternode.conf file.
+
+To start the MN from the wallet. Do it in the debug console of the wallet like this:
 
     startmasternode alias 0 MN01
 
@@ -300,6 +302,12 @@ This will install one more MN in addition to your old 3. The old MNs are not aff
 
 After that, do the steps described in the main-installation part.
 
+When you got to turn on the extra new masternodes you can use these commands
+
+	systemctl enable bitcorn_n100
+	systemctl restart bitcorn_n100
+
+Replace 100 with your new MN number
 
 # Troubleshooting
 
