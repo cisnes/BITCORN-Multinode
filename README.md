@@ -127,7 +127,7 @@ If you already have private keys and txhashes from your existing masternodes you
 
 ***Step 2***
 * Send EXACTLY 10,000,000 Bitcorn to a receive address within your wallet. You must wait for 16 confirmations on the transaction before the masternode can be started.
-* If you want to make a secondary address from inside the wallet, File > Reciveving Addresses > New.
+* If you want to make a secondary address from inside the wallet, File > Receiving Addresses > New.
 ***
 
 ***Step 3***
