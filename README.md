@@ -211,7 +211,7 @@ During the end of the installation, it will ask for your private keys like this:
 Here you enter the genkey from the masternodes.conf file which you made in step 5 of 1.1. 
 
 ### 2.2 Find IP-addresses
-When the installation is done, you will be returned back to the normal console. Now you need to find the IP-adresses of each MN and paste them in masternodes.conf on your computer. 
+When the installation is done, you will be returned back to the normal console. Now you need to find the IP-addresses of each MN and paste them in masternodes.conf on your computer. 
 
 Navigate to the correct directory:
 
@@ -225,7 +225,7 @@ And it will list all the possible configurations. If you installed MN1 to MN4 no
     
     cat bitcorn_n1.conf
 
-Copy the IP-adress which you can find after "bind=". Make sure to include the brackets [] as it's a part of the address. Paste it in the masternodes.conf after the alias. 
+Copy the IP-address which you can find after "bind=". Make sure to include the brackets [] as it's a part of the address. Paste it in the masternodes.conf after the alias. 
 
 Exit the editor by typing pressing CTRL X.
 If it ask you if you want to save changes, press N and click enter. 
