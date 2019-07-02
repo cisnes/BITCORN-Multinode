@@ -291,8 +291,11 @@ The _install.sh_ script support the following parameters:
 
 ## Adding more MNs to your already existing chunk of BITCORN masternodes
 
-The script works the following way that the -c(ount) flag defines the TOTAL number of MNs on the VPS. If you already have 3 masternodes and wish
-to install one more, you need to use the number 4 on the -c flag. Like so:
+First make sure you are in the BITCORN-Multinode folder where the script is, type the command
+
+	cd BITCORN-Multinode
+
+The script works the following way that the -c(ount) flag defines the TOTAL number of MNs on the VPS. If you already have 3 masternodes and wish to install one more, you need to use the number 4 on the -c flag. Like so:
 
 ```bash
 ./install.sh -p bitcorn -c 4 -n 6
@@ -302,7 +305,7 @@ This will install one more MN in addition to your old 3. The old MNs are not aff
 
 After that, do the steps described in the main-installation part.
 
-When you got to turn on the extra new masternodes you can use these commands
+When you got to turn on the extra new masternodes use these commands
 
 	systemctl enable bitcorn_n100
 	systemctl restart bitcorn_n100
