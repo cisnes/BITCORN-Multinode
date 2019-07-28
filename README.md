@@ -6,7 +6,7 @@
 
 The **Multinode** script is a collection of utilities to manage, setup and update multiple Bitcorn masternodes on 1 VPS.
 
-Using this multinode script you are able to have around 8 or 9 Bitcorn masternodes running on one $5 1GB Ram Vultr VPS Server.
+Using this multinode script you are able to have around 5 or 6 Bitcorn masternodes running on one $5 1GB Ram Vultr VPS Server.
 
 If you need support, contact Pineapple or MrAnthony in the <a href="https://discord.gg/eJQJeBB">CTTV Discord</a>
 
@@ -58,7 +58,7 @@ Below is a guide meant to help you install your masternodes
 ***
 
 ***Step 5***
-* Choose a server size: We recommend to purchase the $5 Vultr VPS with 1GB of Ram, this will allow you to install around 8 or 9 masternodes on this 1 VPS.
+* Choose a server size: We recommend to purchase the $5 Vultr VPS with 1GB of Ram, this will allow you to install around 5 or 6 masternodes on this 1 VPS.
 
 ![Example-OS](https://i.imgur.com/WRiYXxt.png)
 ***
@@ -183,7 +183,9 @@ Note: The formatting of the file is very strict, and needs to be followed exactl
 * The `Output Index` is the 0 or 1 that you copied to your text file.
 ![Example-create](https://i.imgur.com/zR8ImHQ.png)
 
-Click "File Save"
+Click "File Save".
+Close the Bitcorn Wallet.
+Open the Bitcorn Wallet again.
 ***
 
 ### 2.0 Install the masternodes
