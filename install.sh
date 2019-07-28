@@ -1,26 +1,3 @@
-#!/bin/bash
-#  ███╗   ██╗ ██████╗ ██████╗ ███████╗███╗   ███╗ █████╗ ███████╗████████╗███████╗██████╗
-#  ████╗  ██║██╔═══██╗██╔══██╗██╔════╝████╗ ████║██╔══██╗██╔════╝╚══██╔══╝██╔════╝██╔══██╗
-#  ██╔██╗ ██║██║   ██║██║  ██║█████╗  ██╔████╔██║███████║███████╗   ██║   █████╗  ██████╔╝
-#  ██║╚██╗██║██║   ██║██║  ██║██╔══╝  ██║╚██╔╝██║██╔══██║╚════██║   ██║   ██╔══╝  ██╔══██╗
-#  ██║ ╚████║╚██████╔╝██████╔╝███████╗██║ ╚═╝ ██║██║  ██║███████║   ██║   ███████╗██║  ██║
-#  ╚═╝  ╚═══╝ ╚═════╝ ╚═════╝ ╚══════╝╚═╝     ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚═╝  ╚═╝
-#                                                           ╚╗ Pineapple and Brett 2019 ╔╝
-#
-# version 	v0.9.9
-# date    	2019-05-22
-#
-# function:	part of the masternode scripts, source the proper config file
-#
-# 	Instructions:
-#               Run this script w/ the desired parameters. Leave blank or use -h for help.
-#
-#	Platforms:
-#               - Linux Ubuntu 16.04 LTS ONLY on a Vultr, Hetzner or DigitalOcean VPS
-#               - Generic Ubuntu support will be added at a later point in time
-#
-# Twitter 	@pureinvestments
-
 # Useful variables
 declare -r CRYPTOS=`ls -l config/ | egrep '^d' | awk '{print $9}' | xargs echo -n; echo`
 declare -r DATE_STAMP="$(date +%y-%m-%d-%s)"
@@ -42,7 +19,7 @@ if [ $project = "bitcorn" ]; then
 ██╔══██╗██║   ██║   ██║     ██║   ██║██╔══██╗██║╚██╗██║
 ██████╔╝██║   ██║   ╚██████╗╚██████╔╝██║  ██║██║ ╚████║
 ╚═════╝ ╚═╝   ╚═╝    ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═══╝
-                      ╚╗  Pineapple and Brett 2019   ╔╝
+                      ╚╗          Pineapple          ╔╝
                        ╚╗ May the force be with you ╔╝   
 
                              ,:::::::::::.   
