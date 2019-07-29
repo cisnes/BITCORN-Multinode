@@ -314,6 +314,56 @@ When you got to turn on the extra new masternodes use these commands
 
 Replace 100 with your new MN number
 
+
+## How to Move a Masternode from one Multinode VPS to another Multinode VPS
+
+If you want to move a masternode from a VPS where you have multinode setup, perhaps to another multinode VPS with more resources you need to follow these steps:
+
+***Step 1***
+Setup another masternode on the new vps, when setting up enter a new masternode genkey you generate from the local wallet when you set it up, . This is just a temporary genkey that will be replaced later on.
+
+Let the new node install and sync to latest block
+
+***Step 2***
+Then once the new masternode is synced, run this command on the OLD vps you want to stop the node on
+
+	systemctl stop bitcorn_n5
+
+Replace "5" in n5 with the number of the masternode you are moving.
+
+***Step 3***
+Open your local wallets Masternode Configuration file and copy the masternode genkey from the masternode you want to move.
+
+***Step 4***
+On the new VPS edit the /etc/masternodes/bitcorn_n1.conf file and paste over the masternode key with the one you just copied.
+Replace "1" in n1 with the number of the new masternode.
+
+***Step 5***
+Copy the IP address of the new masternode.
+
+Save the edited .conf file.
+
+***Step 7***
+In your local wallets Masternode Configuration file paste over the old IP for that node with the new IP address you just copied.
+
+***Step 8***
+Then on the new VPS run the command
+
+	systemctl restart bitcorn_n1
+	
+Replace "1" in n1 with the number of the new masternode.	
+
+***Step 9***
+Close and reopen the local Bitcorn wallet
+
+***Step 10***
+Then start the masternode from your local wallet.
+
+If you did it successfully when you run the check masternode status command, it will return status 4 and show the new IP address.
+
+	bitcorn-cli -conf=/etc/masternodes/bitcorn_n1.conf masternode status
+
+
 # Troubleshooting
 
 ### Error, couldn't connect to server
