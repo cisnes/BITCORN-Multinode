@@ -10,7 +10,7 @@ declare -r DO_NET_CONF="/etc/network/interfaces.d/50-cloud-init.cfg"
 declare -r NETWORK_BASE_TAG="$(dd if=/dev/urandom bs=2 count=1 2>/dev/null | od -x -A n | sed -e 's/^[[:space:]]*//g')"
 
 function showbanner() {
-if [ $project = "bitcorn" ]; then
+
     echo $(tput bold)$(tput setaf 2)
    cat << "EOF"
 ██████╗ ██╗████████╗ ██████╗ ██████╗ ██████╗ ███╗   ██╗
@@ -49,21 +49,6 @@ if [ $project = "bitcorn" ]; then
    ;;: `.,:;;:.                                                   
 
 EOF
-else
-echo $(tput bold)$(tput setaf 2)
-cat << "EOF"
- ███╗   ██╗ ██████╗ ██████╗ ███████╗███╗   ███╗ █████╗ ███████╗████████╗███████╗██████╗
- ████╗  ██║██╔═══██╗██╔══██╗██╔════╝████╗ ████║██╔══██╗██╔════╝╚══██╔══╝██╔════╝██╔══██╗
- ██╔██╗ ██║██║   ██║██║  ██║█████╗  ██╔████╔██║███████║███████╗   ██║   █████╗  ██████╔╝
- ██║╚██╗██║██║   ██║██║  ██║██╔══╝  ██║╚██╔╝██║██╔══██║╚════██║   ██║   ██╔══╝  ██╔══██╗
- ██║ ╚████║╚██████╔╝██████╔╝███████╗██║ ╚═╝ ██║██║  ██║███████║   ██║   ███████╗██║  ██║
- ╚═╝  ╚═══╝ ╚═════╝ ╚═════╝ ╚══════╝╚═╝     ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚═╝  ╚═╝
-                                                          ╚╗ Pineapple and Brett 2019 ╔╝     
-                                                          
-                                                                       
-EOF
-echo "Questions: @pineapple or @brett in Pure Investments Discord"
-fi
 }
 
 # /*
@@ -133,6 +118,7 @@ function install_packages() {
     # development and build packages
     # these are common on all cryptos
     echo "* Package installation!"
+    apt-get unzip \
     add-apt-repository -yu ppa:bitcoin/bitcoin  &>> ${SCRIPT_LOGFILE}
     apt-get -qq -o=Dpkg::Use-Pty=0 -o=Acquire::ForceIPv4=true update  &>> ${SCRIPT_LOGFILE}
     apt-get -qqy -o=Dpkg::Use-Pty=0 -o=Acquire::ForceIPv4=true install build-essential \
