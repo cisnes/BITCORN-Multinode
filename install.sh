@@ -160,6 +160,7 @@ function create_key() {
     sleep 30
     priv_key=$($CODENAME-cli -conf=${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf masternode genkey)
   fi
+  $CODENAME-cli -conf=${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf stop
 }
 
 #
@@ -563,7 +564,7 @@ function source_config() {
             prepare_mn_interfaces
             swaphack
         fi
-        install_packages
+        #install_packages
         build_mn_from_source
         if [ "$update" -eq 0 ]; then
             create_mn_user
@@ -663,7 +664,7 @@ function final_call() {
         cp ${SCRIPTPATH}/scripts/activate_masternodes.sh ${MNODE_HELPER}_${CODENAME}
         echo "">> ${MNODE_HELPER}_${CODENAME}
 
-        for (( c=$STARTNUM; c<=$count; c++)); do
+        for (( c=$STARTNUM; c<=$count; c++ )); do
             echo "systemctl daemon-reload" >> ${MNODE_HELPER}_${CODENAME}
             echo "systemctl enable ${CODENAME}_n${c}" >> ${MNODE_HELPER}_${CODENAME}
             echo "systemctl restart ${CODENAME}_n${c}" >> ${MNODE_HELPER}_${CODENAME}
