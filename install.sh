@@ -19,7 +19,7 @@ function showbanner() {
 ██╔══██╗██║   ██║   ██║     ██║   ██║██╔══██╗██║╚██╗██║
 ██████╔╝██║   ██║   ╚██████╗╚██████╔╝██║  ██║██║ ╚████║
 ╚═════╝ ╚═╝   ╚═╝    ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═══╝
-                      ╚╗          Pineapple          ╔╝
+                      ╚╗       BITCORN PROJECT       ╔╝
                        ╚╗ May the force be with you ╔╝   
 
                              ,:::::::::::.   
@@ -118,13 +118,12 @@ function install_packages() {
     # development and build packages
     # these are common on all cryptos
     echo "* Package installation!"
-    apt-get unzip \
     add-apt-repository -yu ppa:bitcoin/bitcoin  &>> ${SCRIPT_LOGFILE}
     apt-get -qq -o=Dpkg::Use-Pty=0 -o=Acquire::ForceIPv4=true update  &>> ${SCRIPT_LOGFILE}
     apt-get -qqy -o=Dpkg::Use-Pty=0 -o=Acquire::ForceIPv4=true install build-essential \
     libcurl4-gnutls-dev protobuf-compiler libboost-all-dev autotools-dev automake \
     libboost-all-dev libssl-dev make autoconf libtool git apt-utils g++ \
-    libprotobuf-dev pkg-config libudev-dev libqrencode-dev bsdmainutils \
+    libprotobuf-dev pkg-config unzip libudev-dev libqrencode-dev bsdmainutils \
     pkg-config libgmp3-dev libevent-dev jp2a pv virtualenv libdb4.8-dev libdb4.8++-dev  &>> ${SCRIPT_LOGFILE}
     
     # only for 18.04 // openssl
@@ -132,6 +131,35 @@ function install_packages() {
        apt-get -qqy -o=Dpkg::Use-Pty=0 -o=Acquire::ForceIPv4=true install libssl1.0-dev
     fi    
     
+}
+
+function get_snapshot() {
+    # individual data dirs for now to avoid problems
+    echo "* Downloading snapshots"
+    
+    for NUM in $(seq 1 ${count}); do
+        if [ ! -d "${MNODE_DATA_BASE}/${CODENAME}${NUM}/blocks" ]; then
+             echo "LASTER NED SNAPSHOT" &>> ${SCRIPT_LOGFILE}
+             mkdir ${MNODE_DATA_BASE}/${CODENAME}${NUM}/snapshots &>> ${SCRIPT_LOGFILE}
+        fi
+    done
+}
+
+function create_key() {
+  echo -e "${YELLOW}Enter your ${RED}$COINNAME Masternode GEN Key. Blank + enter to auto generate"
+  ${MNODE_DAEMON} -daemon -pid=${MNODE_DATA_BASE}/${CODENAME}${NUM}/${CODENAME}.pid -conf=${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf -datadir=${MNODE_DATA_BASE}/${CODENAME}${NUM}
+  sleep 30
+  if [ -z "$(ps axo cmd:100 | grep $MNODE_DAEMON)" ]; then
+   echo -e "${RED}$COINNAME server couldn't not start. Check /var/log/syslog for errors.{$NC}"
+   exit 1
+  fi
+  priv_key=$($CODENAME-cli -conf=${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf masternode genkey)
+  if [ "$?" -gt "0" ];
+    then
+    echo -e "${RED}Wallet not fully loaded. Let us wait and try again to generate the GEN Key${NC}"
+    sleep 30
+    priv_key=$($CODENAME-cli -conf=${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf masternode genkey)
+  fi
 }
 
 #
@@ -288,6 +316,10 @@ function create_mn_configuration() {
 
             # we dont want to overwrite an existing config file
             if [ ! -f ${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf ]; then
+                if [ -z "$STARTNUM" ]; then
+                    STARTNUM=${NUM}
+                fi
+
                 echo "individual masternode config doesn't exist, generate it!"                  &>> ${SCRIPT_LOGFILE}
 
                 # if a template exists, use this instead of the default
@@ -299,12 +331,17 @@ function create_mn_configuration() {
                     cp ${SCRIPTPATH}/config/default.conf ${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf                  &>> ${SCRIPT_LOGFILE}
                 fi
                 # replace placeholders
-                read -p "Genkey for MN${NUM}: " priv_key
+                #read -p "Genkey for MN${NUM}: " priv_key
                 echo "running sed on file ${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf"                                &>> ${SCRIPT_LOGFILE}
-                sed -e "s/XXX_GIT_PROJECT_XXX/${CODENAME}/" -e "s/XXX_NUM_XXY/${NUM}]/" -e "s/XXX_NUM_XXX/${NUM}/" -e "s/XXX_PASS_XXX/${PASS}/" -e "s/XXX_priv_XXX/${priv_key}/" -e "s/XXX_IPV6_INT_BASE_XXX/[${IPV6_INT_BASE}/" -e "s/XXX_NETWORK_BASE_TAG_XXX/${NETWORK_BASE_TAG}/" -e "s/XXX_MNODE_INBOUND_PORT_XXX/${MNODE_INBOUND_PORT}/" -i ${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf
+                sed -e "s/XXX_GIT_PROJECT_XXX/${CODENAME}/" -e "s/XXX_NUM_XXY/${NUM}]/" -e "s/XXX_NUM_XXX/${NUM}/" -e "s/XXX_PASS_XXX/${PASS}/" -e "s/XXX_IPV6_INT_BASE_XXX/[${IPV6_INT_BASE}/" -e "s/XXX_NETWORK_BASE_TAG_XXX/${NETWORK_BASE_TAG}/" -e "s/XXX_MNODE_INBOUND_PORT_XXX/${MNODE_INBOUND_PORT}/" -i ${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf
+                create_key 
+                echo "* Key is ${priv_key}"
+                sed -e "s/XXX_priv_XXX/${priv_key}/" -i ${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf
                 if [ "$startnodes" -eq 1 ]; then
                     #uncomment masternode= and masternodeprivkey= so the node can autostart and sync
-                    sed 's/\(^.*masternode\(\|privkey\)=.*$\)/#\1/' -i ${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf
+                    sed 's/^#\(.*\)masternode\(.*\)/\1masternode\2/g' -i ${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf
+                   
+
                 fi
             fi
         done
@@ -526,8 +563,7 @@ function source_config() {
             prepare_mn_interfaces
             swaphack
         fi
-        install_packages
-        print_logo
+        #install_packages
         build_mn_from_source
         if [ "$update" -eq 0 ]; then
             create_mn_user
@@ -541,6 +577,7 @@ function source_config() {
             create_mn_configuration
             create_control_configuration
             create_systemd_configuration
+            get_snapshot
         fi
         set_permissions
         cleanup_after
@@ -553,18 +590,6 @@ function source_config() {
     else
         echo "required file ${SETUP_CONF_FILE} does not exist, abort!"
         exit 1
-    fi
-
-}
-
-function print_logo() {
-
-    # print ascii banner if a logo exists
-    echo -e "* Starting the compilation process for ${CODENAME}, stay tuned"
-    if [ -f "${SCRIPTPATH}/assets/$CODENAME.jpg" ]; then
-            jp2a -b --colors --width=56 ${SCRIPTPATH}/assets/${CODENAME}.jpg
-    else
-            jp2a -b --colors --width=56 ${SCRIPTPATH}/assets/default.jpg
     fi
 
 }
@@ -638,10 +663,10 @@ function final_call() {
         cp ${SCRIPTPATH}/scripts/activate_masternodes.sh ${MNODE_HELPER}_${CODENAME}
         echo "">> ${MNODE_HELPER}_${CODENAME}
 
-        for NUM in $(seq 1 ${count}); do
+        for (( c=$STARTNUM; c<=$count; c++)); do
             echo "systemctl daemon-reload" >> ${MNODE_HELPER}_${CODENAME}
-            echo "systemctl enable ${CODENAME}_n${NUM}" >> ${MNODE_HELPER}_${CODENAME}
-            echo "systemctl restart ${CODENAME}_n${NUM}" >> ${MNODE_HELPER}_${CODENAME}
+            echo "systemctl enable ${CODENAME}_n${c}" >> ${MNODE_HELPER}_${CODENAME}
+            echo "systemctl restart ${CODENAME}_n${c}" >> ${MNODE_HELPER}_${CODENAME}
         done
 
         chmod u+x ${MNODE_HELPER}_${CODENAME}
@@ -791,6 +816,9 @@ while true; do
                     if [ -n "$1" ];
                     then
                         count="$1";
+                        project="bitcorn";
+                        net="6"
+                        startnodes="1"
                         shift;
                     fi
             ;;
