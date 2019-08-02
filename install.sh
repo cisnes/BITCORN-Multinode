@@ -563,7 +563,7 @@ function source_config() {
             prepare_mn_interfaces
             swaphack
         fi
-        #install_packages
+        install_packages
         build_mn_from_source
         if [ "$update" -eq 0 ]; then
             create_mn_user
