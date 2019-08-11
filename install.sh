@@ -122,6 +122,7 @@ function install_packages() {
     add-apt-repository -yu ppa:bitcoin/bitcoin  &>> ${SCRIPT_LOGFILE}
     apt-get -qq -o=Dpkg::Use-Pty=0 -o=Acquire::ForceIPv4=true update  &>> ${SCRIPT_LOGFILE}
     apt-get -qqy -o=Dpkg::Use-Pty=0 -o=Acquire::ForceIPv4=true install build-essential \
+    apt-get install unzip \
     libcurl4-gnutls-dev protobuf-compiler libboost-all-dev autotools-dev automake \
     libboost-all-dev libssl-dev make autoconf libtool git apt-utils g++ \
     libprotobuf-dev pkg-config unzip libudev-dev libqrencode-dev bsdmainutils \
@@ -575,7 +576,7 @@ function source_config() {
             prepare_mn_interfaces
             swaphack
         fi
-        #install_packages
+        install_packages
         build_mn_from_source
         if [ "$update" -eq 0 ]; then
             create_mn_user
