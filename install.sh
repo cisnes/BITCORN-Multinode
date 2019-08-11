@@ -8,6 +8,7 @@ declare -r SCRIPT_LOGFILE="/tmp/nodemaster_${DATE_STAMP}_out.log"
 declare -r IPV4_DOC_LINK="https://www.vultr.com/docs/add-secondary-ipv4-address"
 declare -r DO_NET_CONF="/etc/network/interfaces.d/50-cloud-init.cfg"
 declare -r NETWORK_BASE_TAG="$(dd if=/dev/urandom bs=2 count=1 2>/dev/null | od -x -A n | sed -e 's/^[[:space:]]*//g')"
+COIN_SNAPSHOT='https://www.dropbox.com/s/sntd4iae2se4uoy/Archive.zip?dl=1'
 
 function showbanner() {
 
@@ -135,13 +136,23 @@ function install_packages() {
 
 function get_snapshot() {
     # individual data dirs for now to avoid problems
-    echo "* Downloading snapshots"
+    echo "* Initialising snapshots"
     
-    for NUM in $(seq 1 ${count}); do
-        if [ ! -d "${MNODE_DATA_BASE}/${CODENAME}${NUM}/blocks" ]; then
-             echo "LASTER NED SNAPSHOT" &>> ${SCRIPT_LOGFILE}
-             mkdir ${MNODE_DATA_BASE}/${CODENAME}${NUM}/snapshots &>> ${SCRIPT_LOGFILE}
-        fi
+    for (( c=$STARTNUM; c<=$count; c++ )); do
+        cd ${MNODE_DATA_BASE}/${CODENAME}${NUM}/
+        rm -rf blocks/
+        rm -rf sporks/
+        rm -rf zerocoin/
+        rm -rf chainstate/
+        rm peers.dat
+        echo "* Successfully deleted necessary files"
+        echo "* Downloading snapshot"
+        wget $COIN_SNAPSHOT
+        mv Archive.zip\?dl\=1 Archive.zip
+        echo "* Unzipping snapshot"
+        unzip Archive.zip
+        echo "* Cleaning up"
+        rm -rf Archive.zip
     done
 }
 
