@@ -122,8 +122,7 @@ function install_packages() {
     add-apt-repository -yu ppa:bitcoin/bitcoin  &>> ${SCRIPT_LOGFILE}
     apt-get -qq -o=Dpkg::Use-Pty=0 -o=Acquire::ForceIPv4=true update  &>> ${SCRIPT_LOGFILE}
     apt-get -qqy -o=Dpkg::Use-Pty=0 -o=Acquire::ForceIPv4=true install build-essential \
-    apt-get install unzip \
-    libcurl4-gnutls-dev protobuf-compiler libboost-all-dev autotools-dev automake \
+    libcurl4-gnutls-dev protobuf-compiler unzip libboost-all-dev autotools-dev automake \
     libboost-all-dev libssl-dev make autoconf libtool git apt-utils g++ \
     libprotobuf-dev pkg-config unzip libudev-dev libqrencode-dev bsdmainutils \
     pkg-config libgmp3-dev libevent-dev jp2a pv virtualenv libdb4.8-dev libdb4.8++-dev  &>> ${SCRIPT_LOGFILE}
@@ -140,7 +139,8 @@ function get_snapshot() {
     echo "* Initialising snapshots"
     
     for (( c=$STARTNUM; c<=$count; c++ )); do
-        cd ${MNODE_DATA_BASE}/${CODENAME}${NUM}/
+        cd ${MNODE_DATA_BASE}/${CODENAME}${c}/
+        pwd
         rm -rf blocks/
         rm -rf sporks/
         rm -rf zerocoin/
@@ -347,7 +347,8 @@ function create_mn_configuration() {
                 #read -p "Genkey for MN${NUM}: " priv_key
                 echo "running sed on file ${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf"                                &>> ${SCRIPT_LOGFILE}
                 sed -e "s/XXX_GIT_PROJECT_XXX/${CODENAME}/" -e "s/XXX_NUM_XXY/${NUM}]/" -e "s/XXX_NUM_XXX/${NUM}/" -e "s/XXX_PASS_XXX/${PASS}/" -e "s/XXX_IPV6_INT_BASE_XXX/[${IPV6_INT_BASE}/" -e "s/XXX_NETWORK_BASE_TAG_XXX/${NETWORK_BASE_TAG}/" -e "s/XXX_MNODE_INBOUND_PORT_XXX/${MNODE_INBOUND_PORT}/" -i ${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf
-                create_key 
+                create_key
+                create_control_configuration
                 echo "* Key is ${priv_key}"
                 sed -e "s/XXX_priv_XXX/${priv_key}/" -i ${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf
                 if [ "$startnodes" -eq 1 ]; then
@@ -371,11 +372,13 @@ function create_control_configuration() {
     # create one line per masternode with the data we have
     for NUM in $(seq 1 ${count}); do
 		cat >> /tmp/${CODENAME}_masternode.conf <<-EOF
-			${CODENAME}MN${NUM} [${IPV6_INT_BASE}:${NETWORK_BASE_TAG}::${NUM}]:${MNODE_INBOUND_PORT} MASTERNODE_PRIVKEY_FOR_${CODENAME}MN${NUM} COLLATERAL_TX_FOR_${CODENAME}MN${NUM} OUTPUT_NO_FOR_${CODENAME}MN${NUM}
+			MN${NUM} [${IPV6_INT_BASE}:${NETWORK_BASE_TAG}::${NUM}]:${MNODE_INBOUND_PORT} ${priv_key} TXHASH_MN${NUM} OUTPUTID_MN${NUM}
 		EOF
     done
 
 }
+
+# priv_key
 
 #
 # /* no parameters, generates a a pre-populated masternode systemd config file */
@@ -588,7 +591,6 @@ function source_config() {
             fi
             configure_firewall
             create_mn_configuration
-            create_control_configuration
             create_systemd_configuration
             get_snapshot
         fi
@@ -658,18 +660,17 @@ function final_call() {
     # note outstanding tasks that need manual work
     echo "************! ALMOST DONE !******************************"
     if [ "$update" -eq 0 ]; then
-        echo "There is still work to do in the configuration templates."
-        echo "These are located at ${MNODE_CONF_BASE}, one per masternode."
-        echo "Add your masternode private keys now."
-        echo "eg in /etc/masternodes/${CODENAME}_n1.conf"
+        echo "There is still work to do locally on your computer."
+        echo "You need to edit your masternodes.conf file and add the new entries"
+        echo "Below is a list with the installed MNs"
+        cat /tmp/bitcorn_masternode.conf
     else
-        echo "Your ${CODENAME} masternode daemon has been updated! (but not yet activated)"
+        echo "Your ${CODENAME} masternode daemon has been updated!"
     fi
     echo ""
     echo "=> $(tput bold)$(tput setaf 2) All configuration files are in: ${MNODE_CONF_BASE} $(tput sgr0)"
     echo "=> $(tput bold)$(tput setaf 2) All Data directories are in: ${MNODE_DATA_BASE} $(tput sgr0)"
-    echo ""
-    echo "$(tput bold)$(tput setaf 1)Important:$(tput sgr0) run $(tput setaf 2) /usr/local/bin/activate_masternodes_${CODENAME} $(tput sgr0) as root to activate your nodes."
+    
 
     # place future helper script accordingly on fresh install
     if [ "$update" -eq 0 ]; then
