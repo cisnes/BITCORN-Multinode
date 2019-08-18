@@ -6,7 +6,7 @@
 
 The **Multinode** script is a collection of utilities to manage, setup and update multiple Bitcorn masternodes on 1 VPS.
 
-Using this multinode script you are able to have around 5 or 6 Bitcorn masternodes running on one $5 1GB Ram Vultr VPS Server.
+Using this multinode script you are able to have around 4 or 5 Bitcorn masternodes running on one $5 1GB Ram Vultr VPS Server.
 
 If you need support, contact Pineapple or MrAnthony in the <a href="https://discord.gg/eJQJeBB">CTTV Discord</a>
 
@@ -58,7 +58,7 @@ Below is a guide meant to help you install your masternodes
 ***
 
 ***Step 5***
-* Choose a server size: We recommend to purchase the $5 Vultr VPS with 1GB of Ram, this will allow you to install around 5 or 6 masternodes on this 1 VPS.
+* Choose a server size: We recommend to purchase the $5 Vultr VPS with 1GB of Ram, this will allow you to install around 4 or 5 masternodes on this 1 VPS. Do not install more than this on the $5 VPS as you will run into space issues as you are only allowed 25GB max per VPS.
 
 ![Example-OS](https://i.imgur.com/WRiYXxt.png)
 ***
@@ -199,9 +199,9 @@ The following script will install **3 bitcorn** masternodes using **IPv6**.
 
     ./install.sh -p bitcorn -c 3 -n 6
 
-Take note of this: The **count/-c** is the **total** number of masternodes of that coin you want to have installed on the VPS. If you already have 3 MNs and want to install 3 more, you need to use `-c 6`. The first 3 masternodes are not affected. 
+Take note of this: The **count/-c** is the **total** number of masternodes of that coin you want to have installed on the VPS. If you already have 3 MNs and want to install 2 more, you need to use `-c 5`. The first 3 masternodes are not affected. 
 
-We recommend to only install 3 masternodes at once, best to install masternodes in batches of 3 as this process can take a long time to sync and download the entire blockchain for each masternode. The more masternodes you sync at once the longer this process will take.
+We recommend to only install 3 masternodes at once, best to install masternodes in small batches as this process can take a long time to sync and download the entire blockchain for each masternode. The more masternodes you sync at once the longer this process will take.
 
 
 ### 2.1 Enter private keys
