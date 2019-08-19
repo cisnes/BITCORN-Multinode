@@ -8,7 +8,7 @@ declare -r SCRIPT_LOGFILE="/tmp/nodemaster_${DATE_STAMP}_out.log"
 declare -r IPV4_DOC_LINK="https://www.vultr.com/docs/add-secondary-ipv4-address"
 declare -r DO_NET_CONF="/etc/network/interfaces.d/50-cloud-init.cfg"
 declare -r NETWORK_BASE_TAG="$(dd if=/dev/urandom bs=2 count=1 2>/dev/null | od -x -A n | sed -e 's/^[[:space:]]*//g')"
-COIN_SNAPSHOT='https://www.dropbox.com/s/sntd4iae2se4uoy/Archive.zip?dl=1'
+COIN_SNAPSHOT='http://45.32.176.160/snapshot.zip'
 
 function showbanner() {
 
@@ -119,19 +119,22 @@ function install_packages() {
     # development and build packages
     # these are common on all cryptos
     echo "* Package installation!"
-    add-apt-repository -yu ppa:bitcoin/bitcoin  &>> ${SCRIPT_LOGFILE}
-    apt-get -qq -o=Dpkg::Use-Pty=0 -o=Acquire::ForceIPv4=true update  &>> ${SCRIPT_LOGFILE}
-    apt-get -qqy -o=Dpkg::Use-Pty=0 -o=Acquire::ForceIPv4=true install build-essential \
-    libcurl4-gnutls-dev protobuf-compiler unzip libboost-all-dev autotools-dev automake \
-    libboost-all-dev libssl-dev make autoconf libtool git apt-utils g++ \
-    libprotobuf-dev pkg-config unzip libudev-dev libqrencode-dev bsdmainutils \
-    pkg-config libgmp3-dev libevent-dev jp2a pv virtualenv libdb4.8-dev libdb4.8++-dev  &>> ${SCRIPT_LOGFILE}
-    
-    # only for 18.04 // openssl
-    if [[ "${VERSION_ID}" == "18.04" ]] ; then
-       apt-get -qqy -o=Dpkg::Use-Pty=0 -o=Acquire::ForceIPv4=true install libssl1.0-dev
-    fi    
-    
+    if [ ! -f ${MNODE_CONF_BASE}/${CODENAME}_n1.conf ]; then
+        add-apt-repository -yu ppa:bitcoin/bitcoin  &>> ${SCRIPT_LOGFILE}
+        apt-get -qq -o=Dpkg::Use-Pty=0 -o=Acquire::ForceIPv4=true update  &>> ${SCRIPT_LOGFILE}
+        apt-get -qqy -o=Dpkg::Use-Pty=0 -o=Acquire::ForceIPv4=true install build-essential \
+        libcurl4-gnutls-dev protobuf-compiler unzip libboost-all-dev autotools-dev automake \
+        libboost-all-dev libssl-dev make autoconf libtool git apt-utils g++ \
+        libprotobuf-dev pkg-config unzip libudev-dev libqrencode-dev bsdmainutils \
+        pkg-config libgmp3-dev libevent-dev jp2a pv virtualenv libdb4.8-dev libdb4.8++-dev  &>> ${SCRIPT_LOGFILE}
+        
+        # only for 18.04 // openssl
+        if [[ "${VERSION_ID}" == "18.04" ]] ; then
+        apt-get -qqy -o=Dpkg::Use-Pty=0 -o=Acquire::ForceIPv4=true install libssl1.0-dev
+        fi    
+    else
+        echo "* Packages already installed"
+    fi
 }
 
 function get_snapshot() {
@@ -149,11 +152,10 @@ function get_snapshot() {
         echo "* Successfully deleted necessary files"
         echo "* Downloading snapshot"
         wget $COIN_SNAPSHOT
-        mv Archive.zip\?dl\=1 Archive.zip
         echo "* Unzipping snapshot"
-        unzip Archive.zip
+        unzip snapshot.zip
         echo "* Cleaning up"
-        rm -rf Archive.zip
+        rm -rf snapshot.zip
     done
 }
 
@@ -173,6 +175,8 @@ function create_key() {
     priv_key=$($CODENAME-cli -conf=${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf masternode genkey)
   fi
   $CODENAME-cli -conf=${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf stop
+  sleep 10
+  echo "Waiting for node to shut down"
 }
 
 #
@@ -226,52 +230,6 @@ function create_mn_dirs() {
         fi
     done
 
-}
-
-#
-# /* no parameters, creates a sentinel config for a set of masternodes (one per masternode)  */
-#
-function create_sentinel_setup() {
-
-	SENTINEL_BASE=/usr/share/sentinel
-	SENTINEL_ENV=/usr/share/sentinelenv
-
-	# if code directory does not exists, we create it clone the src
-	if [ ! -d ${SENTINEL_BASE} ]; then
-		cd /usr/share                                               &>> ${SCRIPT_LOGFILE}
-		git clone https://github.com/dashpay/sentinel.git sentinel  &>> ${SCRIPT_LOGFILE}
-		cd sentinel                                                 &>> ${SCRIPT_LOGFILE}
-		rm -f rm sentinel.conf                                      &>> ${SCRIPT_LOGFILE}
-	else
-		echo "* Updating the existing sentinel GIT repo"
-		cd ${SENTINEL_BASE}           &>> ${SCRIPT_LOGFILE}
-		git pull                      &>> ${SCRIPT_LOGFILE}
-		rm -f rm sentinel.conf        &>> ${SCRIPT_LOGFILE}
-	fi
-	
-	# create a globally accessible venv and install sentinel requirements
-	virtualenv --system-site-packages ${SENTINEL_ENV}      &>> ${SCRIPT_LOGFILE}
-	${SENTINEL_ENV}/bin/pip install -r requirements.txt    &>> ${SCRIPT_LOGFILE}
-
-    # create one sentinel config file per masternode
-	for NUM in $(seq 1 ${count}); do
-	    if [ ! -f "${SENTINEL_BASE}/${CODENAME}${NUM}_sentinel.conf" ]; then
-	         echo "* Creating sentinel configuration for ${CODENAME} masternode number ${NUM}" &>> ${SCRIPT_LOGFILE}    
-		     echo "dash_conf=${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf"            > ${SENTINEL_BASE}/${CODENAME}${NUM}_sentinel.conf
-             echo "network=mainnet"                                                  >> ${SENTINEL_BASE}/${CODENAME}${NUM}_sentinel.conf
-             echo "db_name=${SENTINEL_BASE}/database/${CODENAME}_${NUM}_sentinel.db" >> ${SENTINEL_BASE}/${CODENAME}${NUM}_sentinel.conf
-             echo "db_driver=sqlite"                                                 >> ${SENTINEL_BASE}/${CODENAME}${NUM}_sentinel.conf
-        fi
-    done
-
-    export SENTINEL_CONFIG=${SENTINEL_BASE}/${CODENAME}${NUM}_sentinel.conf; cd ${SENTINEL_BASE} && ${SENTINEL_ENV}/bin/python ${SENTINEL_BASE}/bin/sentinel.py
-
-
-    echo "$(tput sgr0)$(tput setaf 3)Generated a Sentinel config for you. To activate Sentinel run:$(tput sgr0)"
-    echo "$(tput sgr0)$(tput setaf 2)export SENTINEL_CONFIG=${SENTINEL_BASE}/${CODENAME}${NUM}_sentinel.conf; cd ${SENTINEL_BASE} && ${SENTINEL_ENV}/bin/python ${SENTINEL_BASE}/bin/sentinel.py$(tput sgr0)"
-    echo ""
-    echo "$(tput sgr0)$(tput setaf 2)If it works, add the command as cronjob:  $(tput sgr0)"
-    echo "$(tput sgr0)$(tput setaf 2)* * * * * export SENTINEL_CONFIG=${SENTINEL_BASE}/${CODENAME}${NUM}_sentinel.conf; cd ${SENTINEL_BASE} && ${SENTINEL_ENV}/bin/python ${SENTINEL_BASE}/bin/sentinel.py >> /var/log/sentinel/sentinel-cron.log$(tput sgr0) 2>&1"
 }
 
 #
@@ -348,15 +306,13 @@ function create_mn_configuration() {
                 echo "running sed on file ${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf"                                &>> ${SCRIPT_LOGFILE}
                 sed -e "s/XXX_GIT_PROJECT_XXX/${CODENAME}/" -e "s/XXX_NUM_XXY/${NUM}]/" -e "s/XXX_NUM_XXX/${NUM}/" -e "s/XXX_PASS_XXX/${PASS}/" -e "s/XXX_IPV6_INT_BASE_XXX/[${IPV6_INT_BASE}/" -e "s/XXX_NETWORK_BASE_TAG_XXX/${NETWORK_BASE_TAG}/" -e "s/XXX_MNODE_INBOUND_PORT_XXX/${MNODE_INBOUND_PORT}/" -i ${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf
                 create_key
-                create_control_configuration
                 echo "* Key is ${priv_key}"
                 sed -e "s/XXX_priv_XXX/${priv_key}/" -i ${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf
                 if [ "$startnodes" -eq 1 ]; then
                     #uncomment masternode= and masternodeprivkey= so the node can autostart and sync
                     sed 's/^#\(.*\)masternode\(.*\)/\1masternode\2/g' -i ${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf
-                   
-
                 fi
+                create_control_configuration
             fi
         done
 
@@ -371,8 +327,15 @@ function create_control_configuration() {
     rm -f /tmp/${CODENAME}_masternode.conf &>> ${SCRIPT_LOGFILE}
     # create one line per masternode with the data we have
     for NUM in $(seq 1 ${count}); do
+        
+        tkey=$(sed -n 51p /etc/masternodes/bitcorn_n${NUM}.conf)
+        key=${tkey#"masternodeprivkey="}
+        
+        tip=$(sed -n 11p /etc/masternodes/bitcorn_n${NUM}.conf)
+        ip=${tip#"bind="}
+
 		cat >> /tmp/${CODENAME}_masternode.conf <<-EOF
-			MN${NUM} [${IPV6_INT_BASE}:${NETWORK_BASE_TAG}::${NUM}]:${MNODE_INBOUND_PORT} ${priv_key} TXHASH_MN${NUM} OUTPUTID_MN${NUM}
+			MN${NUM} ${ip}:${MNODE_INBOUND_PORT} ${key} TXHASH_MN${NUM} OUTPUTID_MN${NUM}
 		EOF
     done
 
@@ -688,7 +651,7 @@ function final_call() {
 
     if [ "$startnodes" -eq 1 ]; then
         echo ""
-        echo "** Your nodes are starting up. Don't forget to change the masternodeprivkey later."
+        echo "** Your nodes are starting up. Opening the wallet/loading blocks may take up to 30 minutes after installation and"
         ${MNODE_HELPER}_${CODENAME}
     fi
     tput sgr0
