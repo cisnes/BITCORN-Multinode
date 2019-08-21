@@ -75,7 +75,7 @@ function get_confirmation() {
 # /* no parameters, displays the help message */
 #
 function show_help(){
-    clear
+    
     showbanner
     echo "install.sh, version $SCRIPT_VERSION";
     echo "Usage example:";
@@ -490,15 +490,15 @@ function source_config() {
         # if update flag was given, check if all required mn-helper files exist
         if [ "$update" -eq 1 ]; then
             if [ ! -f ${MNODE_DAEMON} ]; then
-                echo "UPDATE FAILED! Daemon hasn't been found. Please try the normal installation process by omitting the upgrade parameter."
+                echo "UPDATE FAILED! Daemon hasn't been found. Please try the normal installation process by running the ./install.sh script"
                 exit 1
             fi
             if [ ! -f ${MNODE_HELPER}_${CODENAME} ]; then
-                echo "UPDATE FAILED! Masternode activation file ${MNODE_HELPER}_${CODENAME} hasn't been found. Please try the normal installation process by omitting the upgrade parameter."
+                echo "UPDATE FAILED! Masternode activation file ${MNODE_HELPER}_${CODENAME} hasn't been found. Please try the normal installation process by orunning the ./install.sh script"
                 exit 1
             fi
             if [ ! -d ${MNODE_DATA_BASE} ]; then
-                echo "UPDATE FAILED! ${MNODE_DATA_BASE} hasn't been found. Please try the normal installation process by omitting the upgrade parameter."
+                echo "UPDATE FAILED! ${MNODE_DATA_BASE} hasn't been found. Please try the normal installation process by running the ./install.sh script"
                 exit 1
             fi
         fi
@@ -547,25 +547,8 @@ function source_config() {
         sleep 5
 
         # main routine
-        if [ "$update" -eq 0 ]; then
-            prepare_mn_interfaces
-            swaphack
-        fi
         install_packages
         build_mn_from_source
-        if [ "$update" -eq 0 ]; then
-            create_mn_user
-            create_mn_dirs
-            if [ "$sentinel" -eq 1 ]; then
-                echo "* Sentinel setup chosen" &>> ${SCRIPT_LOGFILE}
-                create_sentinel_setup
-            fi
-            configure_firewall
-            create_mn_configuration
-            create_systemd_configuration
-            get_snapshot
-            create_symlink
-        fi
         set_permissions
         cleanup_after
         showbanner
@@ -764,9 +747,13 @@ debug=0;
 update=0;
 sentinel=0;
 startnodes=0;
+project="bitcorn";
+update="1"
+startnodes="1"
+net="6"
 
 # Execute getopt
-ARGS=$(getopt -o "hp:n:c:r:wsudx" -l "help,project:,net:,count:,release:,wipe,sentinel,update,debug,startnodes" -n "install.sh" -- "$@");
+ARGS=$(getopt -o "hp:n:c:r:wsudx" -l "help,project:,net:,count:,release:,wipe,sentinel,update,debug,startnodes" -n "update.sh" -- "$@");
 
 #Bad arguments
 if [ $? -ne 0 ];
@@ -776,38 +763,12 @@ fi
 
 eval set -- "$ARGS";
 
+
 while true; do
     case "$1" in
         -h|--help)
             shift;
             help;
-            ;;
-        -p|--project)
-            shift;
-                    if [ -n "$1" ];
-                    then
-                        project="$1";
-                        shift;
-                    fi
-            ;;
-        -n|--net)
-            shift;
-                    if [ -n "$1" ];
-                    then
-                        net="$1";
-                        shift;
-                    fi
-            ;;
-        -c|--count)
-            shift;
-                    if [ -n "$1" ];
-                    then
-                        count="$1";
-                        project="bitcorn";
-                        net="6"
-                        startnodes="1"
-                        shift;
-                    fi
             ;;
         -r|--release)
             shift;
@@ -822,41 +783,12 @@ while true; do
             shift;
                     wipe="1";
             ;;
-        -s|--sentinel)
-            shift;
-                    sentinel="1";
-            ;;
-        -u|--update)
-            shift;
-                    update="1";
-            ;;
-        -d|--debug)
-            shift;
-                    debug="1";
-            ;;
-        -x|--startnodes)
-            shift;
-                    startnodes="1";
-            ;;
-
         --)
             shift;
             break;
             ;;
     esac
 done
-
-# Check required arguments
-if [ -z "$project" ]
-then
-    show_help;
-fi
-
-# Check required arguments
-if [ "$wipe" -eq 1 ]; then
-    get_confirmation "Would you really like to WIPE ALL DATA!? YES/NO y/n" && wipe_all
-    exit 0
-fi
 
 #################################################
 # source default config before everything else
