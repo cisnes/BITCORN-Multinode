@@ -20,7 +20,7 @@ function showbanner() {
 ██╔══██╗██║   ██║   ██║     ██║   ██║██╔══██╗██║╚██╗██║
 ██████╔╝██║   ██║   ╚██████╗╚██████╔╝██║  ██║██║ ╚████║
 ╚═════╝ ╚═╝   ╚═╝    ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═══╝
-                      ╚╗       BITCORN PROJECT       ╔╝
+                      ╚╗     THE BITCORN PROJECT     ╔╝
                        ╚╗ May the force be with you ╔╝   
 
                              ,:::::::::::.   
@@ -506,21 +506,7 @@ function source_config() {
         fi
 
         # main block of function logic starts here
-        # if update flag was given, check if all required mn-helper files exist
-        if [ "$update" -eq 1 ]; then
-            if [ ! -f ${MNODE_DAEMON} ]; then
-                echo "UPDATE FAILED! Daemon hasn't been found. Please try the normal installation process by omitting the upgrade parameter."
-                exit 1
-            fi
-            if [ ! -f ${MNODE_HELPER}_${CODENAME} ]; then
-                echo "UPDATE FAILED! Masternode activation file ${MNODE_HELPER}_${CODENAME} hasn't been found. Please try the normal installation process by omitting the upgrade parameter."
-                exit 1
-            fi
-            if [ ! -d ${MNODE_DATA_BASE} ]; then
-                echo "UPDATE FAILED! ${MNODE_DATA_BASE} hasn't been found. Please try the normal installation process by omitting the upgrade parameter."
-                exit 1
-            fi
-        fi
+        
 
         echo "************************* Installation Plan *****************************************"
         NUMBERINSTALLED=0
@@ -528,80 +514,59 @@ function source_config() {
             # we dont want to overwrite an existing config file
             if [ -f ${MNODE_CONF_BASE}/${CODENAME}_n${A}.conf ]; then
                     NUMBERINSTALLED=${A}
-                    echo "${NUMBERINSTALLED}"
             fi
         done
         echo ""
         echo "Number of Bitcorn nodes installed: ${NUMBERINSTALLED}"
         if [ ! "${NUMBERINSTALLED}" -eq 0 ]; then 
-            read -p "** How many *additional* masternodes do you want? " additional
+            read -p "** How many *additional* masternodes do you want to add?: " additional
             echo ""
             echo ""
             let "count = NUMBERINSTALLED + additional"
         else
-            read -p "** How many masternodes do you want want to install? " count
+            read -p "** How many masternodes do you want want to install?: " count
         fi
 
-
-        if [ "$update" -eq 1 ]; then
-            echo "I am going to update your existing "
-            echo "$(tput bold)$(tput setaf 2) => ${project} masternode(s) in version ${release} $(tput sgr0)"
-        else
-            echo "Installing and configuring your server to a total of"
-            echo "$(tput bold)$(tput setaf 2) => ${count} ${project} masternode(s) in version ${release} $(tput sgr0)"
-        fi
+        echo "Installing and configuring your server to a total of"
+        echo "$(tput bold)$(tput setaf 2) => ${count} ${project} masternode(s) in version ${release} $(tput sgr0)"
         echo "for you now."
         # show a hint for MANUAL IPv4 configuration
-        if [ "${net}" -eq 4 ]; then
-            NETWORK_TYPE=4
+        if [ "${manual}" -eq 1 ]; then
+            
             echo "WARNING:"
-            echo "You selected IPv4 for networking but there is no automatic workflow for this part."
-            echo "This means you will have some mamual work to do to after this configuration run."
-            echo ""
-            echo "See the following link for instructions how to add multiple ipv4 addresses on vultr:"
-            echo "${IPV4_DOC_LINK}"
+            echo "You selected manual networking which leads to a manual workflow for this part."
+            echo "You need to type in your IPs when asked. This feature is for people running custom servers"
         fi
-        # sentinel setup
-        if [ "$sentinel" -eq 1 ]; then
-            echo "I will also generate a Sentinel configuration for you."
-        fi
+
         # start nodes after setup
         if [ "$startnodes" -eq 1 ]; then
-            echo "I will start your masternodes after the installation."
+            echo "Your nodes will start after the installation."
         fi
         echo ""
         echo "*************************************************************************************"
         sleep 5
 
         # main routine
-        if [ "$update" -eq 0 ]; then
-            prepare_mn_interfaces
-            swaphack
-        fi
+        
+        prepare_mn_interfaces
+        swaphack
+        
         install_packages
         build_mn_from_source
-        if [ "$update" -eq 0 ]; then
-            create_mn_user
-            create_mn_dirs
-            if [ "$sentinel" -eq 1 ]; then
-                echo "* Sentinel setup chosen" &>> ${SCRIPT_LOGFILE}
-                create_sentinel_setup
-            fi
-            configure_firewall
-            create_mn_configuration
-            create_control_configuration
-            create_systemd_configuration
-            get_snapshot
-            create_symlink
-        fi
+        
+        create_mn_user
+        create_mn_dirs
+        configure_firewall
+        create_mn_configuration
+        create_control_configuration
+        create_systemd_configuration
+        get_snapshot
+        create_symlink
+        
         set_permissions
         cleanup_after
         showbanner
         final_call
-        if [ "$update" -eq 1 ]; then
-            # need to update the systemctl daemon, else an error will occur when running `systemctl enable` on a changed systemd process
-            systemctl daemon-reload
-        fi
     else
         echo "required file ${SETUP_CONF_FILE} does not exist, abort!"
         exit 1
@@ -614,7 +579,7 @@ function source_config() {
 #
 function build_mn_from_source() {
         # daemon not found compile it
-        if [ ! -f ${MNODE_DAEMON} ] || [ "$update" -eq 1 ]; then
+        if [ ! -f ${MNODE_DAEMON} ]; then
                 # create code directory if it doesn't exist
                 if [ ! -d ${SCRIPTPATH}/${CODE_DIR} ]; then
                     mkdir -p ${SCRIPTPATH}/${CODE_DIR}              &>> ${SCRIPT_LOGFILE}
@@ -629,16 +594,6 @@ function build_mn_from_source() {
                 cd ${SCRIPTPATH}/${CODE_DIR}/${CODENAME}            &>> ${SCRIPT_LOGFILE}
                 echo "* Checking out desired GIT tag: ${release}"
                 git checkout ${release}                             &>> ${SCRIPT_LOGFILE}
-
-                if [ "$update" -eq 1 ]; then
-                    echo "update given, deleting the old daemon NOW!" &>> ${SCRIPT_LOGFILE}
-                    rm -f ${MNODE_DAEMON}
-                    # old daemon must be removed before compilation. Would be better to remove it afterwards, however not possible with current structure
-                    if [ -f ${MNODE_DAEMON} ]; then
-                            echo "UPDATE FAILED! Daemon ${MNODE_DAEMON} couldn't be removed. Please open an issue at https://github.com/masternodes/vps/issues. Thank you!"
-                            exit 1
-                    fi
-                fi
 
                 # compilation starts here
                 source ${SCRIPTPATH}/config/${CODENAME}/${CODENAME}.compile | pv -t -i0.1
@@ -660,36 +615,31 @@ function build_mn_from_source() {
 function final_call() {
     # note outstanding tasks that need manual work
     echo "************! ALMOST DONE !******************************"
-    if [ "$update" -eq 0 ]; then
-        echo "There is still work to do locally on your computer."
-        echo "You need to edit your masternodes.conf file and add the new entries"
-        echo "Below is a list with the installed MNs:"
-        cat /tmp/bitcorn_masternode.conf
-    else
-        echo "Your ${CODENAME} masternode daemon has been updated!"
-    fi
+    echo "There is still work to do locally on your computer."
+    echo "You need to edit your masternodes.conf file and add the new entries"
+    echo "Below is a list with the installed MNs:"
+    cat /tmp/bitcorn_masternode.conf
     echo ""
     echo "=> $(tput bold)$(tput setaf 2) All configuration files are in: ${MNODE_CONF_BASE} $(tput sgr0)"
     echo "=> $(tput bold)$(tput setaf 2) All Data directories are in: ${MNODE_DATA_BASE} $(tput sgr0)"
     
 
     # place future helper script accordingly on fresh install
-    if [ "$update" -eq 0 ]; then
-        cp ${SCRIPTPATH}/scripts/activate_masternodes.sh ${MNODE_HELPER}_${CODENAME}
-        echo "">> ${MNODE_HELPER}_${CODENAME}
+    
+    cp ${SCRIPTPATH}/scripts/activate_masternodes.sh ${MNODE_HELPER}_${CODENAME}
+    echo "">> ${MNODE_HELPER}_${CODENAME}
 
-        for (( c=$STARTNUM; c<=$count; c++ )); do
-            echo "systemctl daemon-reload" >> ${MNODE_HELPER}_${CODENAME}
-            echo "systemctl enable ${CODENAME}_n${c}" >> ${MNODE_HELPER}_${CODENAME}
-            echo "systemctl restart ${CODENAME}_n${c}" >> ${MNODE_HELPER}_${CODENAME}
-        done
-
-        chmod u+x ${MNODE_HELPER}_${CODENAME}
-    fi
+    for (( c=$STARTNUM; c<=$count; c++ )); do
+        echo "systemctl daemon-reload" >> ${MNODE_HELPER}_${CODENAME}
+        echo "systemctl enable ${CODENAME}_n${c}" >> ${MNODE_HELPER}_${CODENAME}
+        echo "systemctl restart ${CODENAME}_n${c}" >> ${MNODE_HELPER}_${CODENAME}
+    done
+    chmod u+x ${MNODE_HELPER}_${CODENAME}
+    
 
     if [ "$startnodes" -eq 1 ]; then
         echo ""
-        echo "** Your nodes are starting up. Opening the wallet/loading blocks may take up to 30 minutes after installation and"
+        echo "** Your nodes are starting up. Opening the wallet/loading blocks may take up to 20 minutes after starting."
         ${MNODE_HELPER}_${CODENAME}
     fi
     tput sgr0
