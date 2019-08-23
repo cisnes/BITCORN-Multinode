@@ -457,7 +457,7 @@ function cleanup_after() {
 #
 
 function create_symlink () {
-    cd /${USER}/.bitcorn &>> ${SCRIPT_LOGFILE}
+    cd /root/.bitcorn &>> ${SCRIPT_LOGFILE}
     for NUM in $(seq 1 ${count}); do
         if [ ! -z bitcorn_n${NUM} ]; then
             ln -s /etc/masternodes/bitcorn_n${NUM}.conf bitcorn_n${NUM} &>> ${SCRIPT_LOGFILE}
@@ -523,15 +523,17 @@ function source_config() {
         fi
 
         echo "************************* Installation Plan *****************************************"
+        NUMBERINSTALLED=0
         for A in $(seq 1 100); do
             # we dont want to overwrite an existing config file
             if [ -f ${MNODE_CONF_BASE}/${CODENAME}_n${A}.conf ]; then
                     NUMBERINSTALLED=${A}
+                    echo "${NUMBERINSTALLED}"
             fi
         done
         echo ""
         echo "Number of Bitcorn nodes installed: ${NUMBERINSTALLED}"
-        if [ ! "${NUMBERINSTALLED}" == "0" ]; then 
+        if [ ! "${NUMBERINSTALLED}" -eq 0 ]; then 
             read -p "** How many *additional* masternodes do you want? " additional
             echo ""
             echo ""
@@ -789,7 +791,7 @@ wipe=0;
 debug=0;
 update=0;
 sentinel=0;
-startnodes=0;
+startnodes=1;
 advanced=0;
 manual=0;
 project="bitcorn"
