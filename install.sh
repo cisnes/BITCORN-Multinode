@@ -452,7 +452,7 @@ function cleanup_after() {
 #
 
 function create_symlink () {
-    cd /root/.bitcorn &>> ${SCRIPT_LOGFILE}
+    cd /${USER}/.bitcorn &>> ${SCRIPT_LOGFILE}
     ln -s /etc/masternodes/bitcorn_n${NUM}.conf bitcorn${NUM} &>> ${SCRIPT_LOGFILE}
 }
 
