@@ -106,7 +106,6 @@ function check_distro() {
             exit 1
         fi
     else
-        # no, thats not ok!
         echo "This script only supports Ubuntu 16.04 & 18.04 LTS, exiting."
         exit 1
     fi
@@ -140,8 +139,8 @@ function install_packages() {
 function get_snapshot() {
     # individual data dirs for now to avoid problems
     echo "* Initialising snapshots"
-    
-    for (( c=$STARTNUM; c<=$count; c++ )); do
+            
+    for (( c=${STARTNUM}; c<=$count; c++ )); do
         cd ${MNODE_DATA_BASE}/${CODENAME}${c}/
         pwd
         rm -rf blocks/
@@ -302,10 +301,21 @@ function create_mn_configuration() {
                     cp ${SCRIPTPATH}/config/default.conf ${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf                  &>> ${SCRIPT_LOGFILE}
                 fi
                 # replace placeholders
-                #read -p "Genkey for MN${NUM}: " priv_key
+                echo "*************************************************************************************"
+                echo "*************************  INPUT MASTERNODE_${NUM} DATA *****************************"
+                echo "*************************************************************************************"
+                read -p "** Genkey for MN${NUM} (ENTER to auto-generate): " priv_key
                 echo "running sed on file ${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf"                                &>> ${SCRIPT_LOGFILE}
-                sed -e "s/XXX_GIT_PROJECT_XXX/${CODENAME}/" -e "s/XXX_NUM_XXY/${NUM}]/" -e "s/XXX_NUM_XXX/${NUM}/" -e "s/XXX_PASS_XXX/${PASS}/" -e "s/XXX_IPV6_INT_BASE_XXX/[${IPV6_INT_BASE}/" -e "s/XXX_NETWORK_BASE_TAG_XXX/${NETWORK_BASE_TAG}/" -e "s/XXX_MNODE_INBOUND_PORT_XXX/${MNODE_INBOUND_PORT}/" -i ${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf
-                create_key
+                
+                if [ "${manual}" -eq 1 ]; then
+                    read -p "** IP for MN${NUM}: " manualip
+                    sed -e "s/XXX_GIT_PROJECT_XXX/${CODENAME}/" -e "s/XXX_NUM_XXX/${NUM}/" -e "s/XXX_PASS_XXX/${PASS}/" -e "s/XXX_IPV6_INT_BASE_XXX:XXX_NETWORK_BASE_TAG_XXX::XXX_NUM_XXY/${manualip}/" -e "s/XXX_MNODE_INBOUND_PORT_XXX/${MNODE_INBOUND_PORT}/" -i ${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf
+                else
+                    sed -e "s/XXX_GIT_PROJECT_XXX/${CODENAME}/" -e "s/XXX_NUM_XXY/${NUM}]/" -e "s/XXX_NUM_XXX/${NUM}/" -e "s/XXX_PASS_XXX/${PASS}/" -e "s/XXX_IPV6_INT_BASE_XXX/[${IPV6_INT_BASE}/" -e "s/XXX_NETWORK_BASE_TAG_XXX/${NETWORK_BASE_TAG}/" -e "s/XXX_MNODE_INBOUND_PORT_XXX/${MNODE_INBOUND_PORT}/" -i ${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf
+                fi
+                if [ -z "${priv_key}"]; then
+                    create_key
+                fi
                 echo "* Key is ${priv_key}"
                 sed -e "s/XXX_priv_XXX/${priv_key}/" -i ${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf
                 if [ "$startnodes" -eq 1 ]; then
@@ -335,7 +345,7 @@ function create_control_configuration() {
         ip=${tip#"bind="}
 
 		cat >> /tmp/${CODENAME}_masternode.conf <<-EOF
-			MN${NUM} ${ip}:${MNODE_INBOUND_PORT} ${key} TXHASH_MN${NUM} OUTPUTID_MN${NUM}
+			MN${NUM} ${ip} ${key} TXHASH_MN${NUM} OUTPUTID_MN${NUM}
 		EOF
     done
 
@@ -635,7 +645,7 @@ function final_call() {
     if [ "$update" -eq 0 ]; then
         echo "There is still work to do locally on your computer."
         echo "You need to edit your masternodes.conf file and add the new entries"
-        echo "Below is a list with the installed MNs"
+        echo "Below is a list with the installed MNs:"
         cat /tmp/bitcorn_masternode.conf
     else
         echo "Your ${CODENAME} masternode daemon has been updated!"
@@ -764,9 +774,12 @@ debug=0;
 update=0;
 sentinel=0;
 startnodes=0;
+advanced=0;
+manual=0;
+
 
 # Execute getopt
-ARGS=$(getopt -o "hp:n:c:r:wsudx" -l "help,project:,net:,count:,release:,wipe,sentinel,update,debug,startnodes" -n "install.sh" -- "$@");
+ARGS=$(getopt -o "hp:n:c:r:wmudx" -l "help,project:,net:,count:,release:,wipe,sentinel,update,debug,startnodes,manual" -n "install.sh" -- "$@");
 
 #Bad arguments
 if [ $? -ne 0 ];
@@ -822,9 +835,9 @@ while true; do
             shift;
                     wipe="1";
             ;;
-        -s|--sentinel)
+        -m|--manual)
             shift;
-                    sentinel="1";
+                    manual="1";
             ;;
         -u|--update)
             shift;
