@@ -302,19 +302,21 @@ function create_mn_configuration() {
                 # replace placeholders
                 echo ""
                 echo ""
-                echo ""
                 echo "*************************************************************************************"
-                echo "*************************  INPUT MASTERNODE_${NUM} DATA *****************************"
+                echo "***************************  INPUT MASTERNODE_${NUM} DATA *******************************"
                 echo "*************************************************************************************"
-                read -p "** Genkey for MN${NUM} (ENTER to auto-generate): " priv_key
+                read -p "** Genkey for MN${NUM} (ENTER to auto-generate): " priv_key                
                 echo "running sed on file ${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf"                                &>> ${SCRIPT_LOGFILE}
                 
                 if [ "${manual}" -eq 1 ]; then
                     read -p "** IP for MN${NUM}: " manualip
-                    sed -e "s/XXX_GIT_PROJECT_XXX/${CODENAME}/" -e "s/XXX_NUM_XXX/${NUM}/" -e "s/XXX_PASS_XXX/${PASS}/" -e "s/XXX_IPV6_INT_BASE_XXX:XXX_NETWORK_BASE_TAG_XXX::XXX_NUM_XXY/${manualip}/" -e "s/XXX_MNODE_INBOUND_PORT_XXX/${MNODE_INBOUND_PORT}/" -i ${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf
+                    echo ""
+                    echo ""
+                    sed -e "s/XXX_GIT_PROJECT_XXX/${CODENAME}/" -e "s/XXX_NUM_XXX/${NUM}/" -e "s/XXX_PASS_XXX/${PASS}/" -e "s/XXX_IPV6_INT_BASE_XXX:XXX_NETWORK_BASE_TAG_XXX::XXX_NUM_XXY/${manualip}/" -e "s/XXX_MNODE_INBOUND_PORT_XXX/${MNODE_INBOUND_PORT}/" -i ${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf &>> ${SCRIPT_LOGFILE}
                 else
-                    sed -e "s/XXX_GIT_PROJECT_XXX/${CODENAME}/" -e "s/XXX_NUM_XXY/${NUM}]/" -e "s/XXX_NUM_XXX/${NUM}/" -e "s/XXX_PASS_XXX/${PASS}/" -e "s/XXX_IPV6_INT_BASE_XXX/[${IPV6_INT_BASE}/" -e "s/XXX_NETWORK_BASE_TAG_XXX/${NETWORK_BASE_TAG}/" -e "s/XXX_MNODE_INBOUND_PORT_XXX/${MNODE_INBOUND_PORT}/" -i ${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf
+                    sed -e "s/XXX_GIT_PROJECT_XXX/${CODENAME}/" -e "s/XXX_NUM_XXY/${NUM}]/" -e "s/XXX_NUM_XXX/${NUM}/" -e "s/XXX_PASS_XXX/${PASS}/" -e "s/XXX_IPV6_INT_BASE_XXX/[${IPV6_INT_BASE}/" -e "s/XXX_NETWORK_BASE_TAG_XXX/${NETWORK_BASE_TAG}/" -e "s/XXX_MNODE_INBOUND_PORT_XXX/${MNODE_INBOUND_PORT}/" -i ${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf &>> ${SCRIPT_LOGFILE}
                 fi
+
                 if [ -z "${priv_key}" ]; then
                     create_key
                     echo "*Generated privkey is: ${priv_key}"
@@ -322,9 +324,11 @@ function create_mn_configuration() {
                 sed -e "s/XXX_priv_XXX/${priv_key}/" -i ${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf &>> ${SCRIPT_LOGFILE}
                 if [ "$startnodes" -eq 1 ]; then
                     #uncomment masternode= and masternodeprivkey= so the node can autostart and sync
+                    
                     sed 's/^#\(.*\)masternode\(.*\)/\1masternode\2/g' -i ${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf
                 fi
-                create_control_configuration
+                echo ""
+                echo ""
             fi
         done
 
@@ -334,12 +338,11 @@ function create_mn_configuration() {
 # /* no parameters, generates a masternode configuration file per masternode in the default */
 #
 function create_control_configuration() {
-
+    echo "*Creating control configuration"
     # delete any old stuff that's still around
     rm -f /tmp/${CODENAME}_masternode.conf &>> ${SCRIPT_LOGFILE}
     # create one line per masternode with the data we have
     for NUM in $(seq 1 ${count}); do
-        
         tkey=$(sed -n 51p /etc/masternodes/bitcorn_n${NUM}.conf)
         key=${tkey#"masternodeprivkey="}
         
@@ -520,23 +523,32 @@ function source_config() {
         fi
 
         echo "************************* Installation Plan *****************************************"
+        for A in $(seq 1 100); do
+            # we dont want to overwrite an existing config file
+            if [ -f ${MNODE_CONF_BASE}/${CODENAME}_n${A}.conf ]; then
+                    NUMBERINSTALLED=${A}
+            fi
+        done
         echo ""
+        echo "Number of Bitcorn nodes installed: ${NUMBERINSTALLED}"
+        if [ ! "${NUMBERINSTALLED}" == "0" ]; then 
+            read -p "** How many *additional* masternodes do you want? " additional
+            echo ""
+            echo ""
+            let "count = NUMBERINSTALLED + additional"
+        else
+            read -p "** How many masternodes do you want want to install? " count
+        fi
+
+
         if [ "$update" -eq 1 ]; then
             echo "I am going to update your existing "
             echo "$(tput bold)$(tput setaf 2) => ${project} masternode(s) in version ${release} $(tput sgr0)"
         else
-            echo "I am going to install and configure "
+            echo "Installing and configuring your server to a total of"
             echo "$(tput bold)$(tput setaf 2) => ${count} ${project} masternode(s) in version ${release} $(tput sgr0)"
         fi
         echo "for you now."
-        echo ""
-        if [ "$update" -eq 0 ]; then
-            # only needed if fresh installation
-            echo "You have to add your masternode private key to the individual config files afterwards"
-            echo ""
-        fi
-        echo "Stay tuned!"
-        echo ""
         # show a hint for MANUAL IPv4 configuration
         if [ "${net}" -eq 4 ]; then
             NETWORK_TYPE=4
@@ -555,9 +567,6 @@ function source_config() {
         if [ "$startnodes" -eq 1 ]; then
             echo "I will start your masternodes after the installation."
         fi
-        echo ""
-        echo "A logfile for this run can be found at the following location:"
-        echo "${SCRIPT_LOGFILE}"
         echo ""
         echo "*************************************************************************************"
         sleep 5
@@ -578,6 +587,7 @@ function source_config() {
             fi
             configure_firewall
             create_mn_configuration
+            create_control_configuration
             create_systemd_configuration
             get_snapshot
             create_symlink
@@ -782,6 +792,8 @@ sentinel=0;
 startnodes=0;
 advanced=0;
 manual=0;
+project="bitcorn"
+net="6"
 
 
 # Execute getopt
