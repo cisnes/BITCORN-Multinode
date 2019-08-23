@@ -159,7 +159,6 @@ function get_snapshot() {
 }
 
 function create_key() {
-  echo -e "${YELLOW}Enter your ${RED}$COINNAME Masternode GEN Key. Blank + enter to auto generate"
   ${MNODE_DAEMON} -daemon -pid=${MNODE_DATA_BASE}/${CODENAME}${NUM}/${CODENAME}.pid -conf=${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf -datadir=${MNODE_DATA_BASE}/${CODENAME}${NUM}
   sleep 30
   if [ -z "$(ps axo cmd:100 | grep $MNODE_DAEMON)" ]; then
@@ -301,6 +300,9 @@ function create_mn_configuration() {
                     cp ${SCRIPTPATH}/config/default.conf ${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf                  &>> ${SCRIPT_LOGFILE}
                 fi
                 # replace placeholders
+                echo ""
+                echo ""
+                echo ""
                 echo "*************************************************************************************"
                 echo "*************************  INPUT MASTERNODE_${NUM} DATA *****************************"
                 echo "*************************************************************************************"
@@ -315,9 +317,9 @@ function create_mn_configuration() {
                 fi
                 if [ -z "${priv_key}"]; then
                     create_key
+                    echo "*Generated privkey is: ${priv_key}"
                 fi
-                echo "* Key is ${priv_key}"
-                sed -e "s/XXX_priv_XXX/${priv_key}/" -i ${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf
+                sed -e "s/XXX_priv_XXX/${priv_key}/" -i ${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf &>> ${SCRIPT_LOGFILE}
                 if [ "$startnodes" -eq 1 ]; then
                     #uncomment masternode= and masternodeprivkey= so the node can autostart and sync
                     sed 's/^#\(.*\)masternode\(.*\)/\1masternode\2/g' -i ${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf
@@ -453,7 +455,11 @@ function cleanup_after() {
 
 function create_symlink () {
     cd /${USER}/.bitcorn &>> ${SCRIPT_LOGFILE}
-    ln -s /etc/masternodes/bitcorn_n${NUM}.conf bitcorn${NUM} &>> ${SCRIPT_LOGFILE}
+    for NUM in $(seq 1 ${count}); do
+        if [! -z bitcorn_n${NUM}]
+            ln -s /etc/masternodes/bitcorn_n${NUM}.conf bitcorn${NUM} &>> ${SCRIPT_LOGFILE}
+        fi
+    done
 }
 
 #
