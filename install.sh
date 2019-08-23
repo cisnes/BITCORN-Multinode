@@ -457,7 +457,7 @@ function create_symlink () {
     cd /${USER}/.bitcorn &>> ${SCRIPT_LOGFILE}
     for NUM in $(seq 1 ${count}); do
         if [ ! -z bitcorn_n${NUM} ]; then
-            ln -s /etc/masternodes/bitcorn_n${NUM}.conf bitcorn${NUM} &>> ${SCRIPT_LOGFILE}
+            ln -s /etc/masternodes/bitcorn_n${NUM}.conf bitcorn_n${NUM} &>> ${SCRIPT_LOGFILE}
         fi
     done
 }
