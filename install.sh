@@ -315,7 +315,7 @@ function create_mn_configuration() {
                 else
                     sed -e "s/XXX_GIT_PROJECT_XXX/${CODENAME}/" -e "s/XXX_NUM_XXY/${NUM}]/" -e "s/XXX_NUM_XXX/${NUM}/" -e "s/XXX_PASS_XXX/${PASS}/" -e "s/XXX_IPV6_INT_BASE_XXX/[${IPV6_INT_BASE}/" -e "s/XXX_NETWORK_BASE_TAG_XXX/${NETWORK_BASE_TAG}/" -e "s/XXX_MNODE_INBOUND_PORT_XXX/${MNODE_INBOUND_PORT}/" -i ${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf
                 fi
-                if [ -z "${priv_key}"]; then
+                if [ -z "${priv_key}" ]; then
                     create_key
                     echo "*Generated privkey is: ${priv_key}"
                 fi
@@ -456,7 +456,7 @@ function cleanup_after() {
 function create_symlink () {
     cd /${USER}/.bitcorn &>> ${SCRIPT_LOGFILE}
     for NUM in $(seq 1 ${count}); do
-        if [! -z bitcorn_n${NUM}]; then
+        if [ ! -z bitcorn_n${NUM} ]; then
             ln -s /etc/masternodes/bitcorn_n${NUM}.conf bitcorn${NUM} &>> ${SCRIPT_LOGFILE}
         fi
     done
