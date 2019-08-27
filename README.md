@@ -194,7 +194,7 @@ The script will now tell you how many masternodes are installed on your server; 
 
 ### 2.1 Enter private keys
 
-During the installation you are given the opportunity to either type in your old private keys or generate new ones. Just press enter if you want the script to generate the keys for you.
+During the installation you are given the opportunity to either type in your old private keys or generate new ones. Just press enter if you want the script to generate the keys for you. You will be handed the keys once the installation is finished. 
 
 ### 2.2 Find IP-addresses and private keys
 When the installation is done, you will be returned back to the normal console with a list of the current installed masternodes and it's data. Copy the information to masternodes.conf locally on your computer. 
