@@ -186,7 +186,9 @@ The first installation of this script will take up to 30mins to get everything s
 
 The script you will be using is in the *BITCORN-Multinode* folder and is called install.sh. You're calling this by using ./ as a prefix. The script can take one flag which is -m by running `./install.sh -m`. By calling that flag you will be given the opportunity to enter your own IP addresses during the installation. This can be useful if you are running your own servers, and not through vultr. Do NOT type that unless you have your own IP-pool. 
 
-    ./install.sh 
+The following command will start the script
+
+    ./install.sh
 
 The script will now tell you how many masternodes are installed on your server; and if it's a new server, how many you want to install. Type the number and press enter. 
 
@@ -243,6 +245,65 @@ Start the script
 It will tell you how many masternodes are installed, and you will be given the opportunity to define how many *additional* nodes you want to install. If you already have two and want to install three more, simply type 3 and press enter
 
 After that, do the steps described in the main-installation part.
+
+
+## How to Move a Masternode from one Multinode VPS to another Multinode VPS
+
+If you want to move a masternode from a VPS where you have multinode setup, perhaps to another multinode VPS with more resources you need to follow these steps:
+
+***Step 1***
+
+Setup another masternode on the new vps, when setting up enter a new masternode genkey you generate from the local wallet when you set it up, . This is just a temporary genkey that will be replaced later on.
+
+Let the new node install and sync to latest block
+
+***Step 2***
+
+Then once the new masternode is synced, run this command on the OLD vps you want to stop the node on
+
+	systemctl stop bitcorn_n5
+
+Replace "5" in n5 with the number of the masternode you are moving.
+
+***Step 3***
+
+Open your local wallets Masternode Configuration file and copy the masternode genkey from the masternode you want to move.
+
+***Step 4***
+
+On the new VPS edit the /etc/masternodes/bitcorn_n1.conf file and paste over the masternode key with the one you just copied.
+Replace "1" in n1 with the number of the new masternode.
+
+***Step 5***
+
+Copy the IP address of the new masternode.
+
+Save the edited .conf file.
+
+***Step 7***
+
+In your local wallets Masternode Configuration file paste over the old IP for that node with the new IP address you just copied.
+
+***Step 8***
+
+Then on the new VPS run the command
+
+	systemctl restart bitcorn_n1
+	
+Replace "1" in n1 with the number of the new masternode.	
+
+***Step 9***
+
+Close and reopen the local Bitcorn wallet
+
+***Step 10***
+
+Then start the masternode from your local wallet.
+
+If you did it successfully when you run the check masternode status command, it will return status 4 and show the new IP address.
+
+	bitcorn-cli -conf=/etc/masternodes/bitcorn_n1.conf masternode status
+
 
 
 ## How to Move a Masternode from one Multinode VPS to another Multinode VPS
