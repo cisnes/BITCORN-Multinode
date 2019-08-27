@@ -142,32 +142,23 @@ If you already have private keys and txhashes from your existing masternodes you
 
 ***Step 5***
 
-Type the command below and press enter
-
-    masternode genkey
-
-Run this command for each of your new masternodes, and paste these into the text document you created earlier as we need them later
-***
-
-***Step 6***
-
 Back in the console type the command below and press enter
 
     masternode outputs
 	
 ***
 
-***Step 7***
+***Step 6***
 * Copy the long key (this is your transaction ID) and the 0 or 1 at the end (this is your output index)
 * Paste these into the text document you created earlier as you will need them in the next step.
 ***
 
-***Step 8***
+***Step 7***
 * Go to the tools tab within the wallet and click "Open Masternode Configuration File"
 ![Example-create](https://i.imgur.com/7wVJrIG.png)
 ***
 
-***Step 9***
+***Step 8***
 
 Enter the following data in this file for every masternode we want to setup as follows:
 
@@ -178,7 +169,7 @@ Note: The formatting of the file is very strict, and needs to be followed exactl
 
 * For `Alias` type something like "MN01" **don't use spaces**
 * The `Address` is the IPv6 and port of your server; that you find in Step 2.2 below, make sure the port is set to **12211**.
-* The `Genkey` is your masternode Gen key output that we just generated from the console
+* The `Genkey` is your masternode Gen; that you can find in step 2.1 below
 * The `TxHash` is the transaction ID/long key that you copied to the text file.
 * The `Output Index` is the 0 or 1 that you copied to your text file.
 ![Example-create](https://i.imgur.com/zR8ImHQ.png)
@@ -193,70 +184,33 @@ By now you have prepared your wallet with the necessary variables and it's time 
 
 The first installation of this script will take up to 30mins to get everything set up, so be patient. Later installations of additional masternodes will take a couple of minutes.
 
-The script you will be using is in the *BITCORN-Multinode* folder and is called install.sh. You're calling this by using ./ as a prefix. The first flag -p is the project. The second flag -c is the count. This is the total number of MNs you want to have installed. And the third flag is -n which is indicating you will be using network settings for IPv6 (required to have multiple MNs)
+The script you will be using is in the *BITCORN-Multinode* folder and is called install.sh. You're calling this by using ./ as a prefix. The script can take one flag which is -m by running `./install.sh -m`. By calling that flag you will be given the opportunity to enter your own IP addresses during the installation. This can be useful if you are running your own servers, and not through vultr. Do NOT type that unless you have your own IP-pool. 
 
-The following script will install **3 bitcorn** masternodes using **IPv6**.
+The following command will start the script
 
-    ./install.sh -p bitcorn -c 3 -n 6
+    ./install.sh
 
-Take note of this: The **count/-c** is the **total** number of masternodes of that coin you want to have installed on the VPS. If you already have 3 MNs and want to install 2 more, you need to use `-c 5`. The first 3 masternodes are not affected. 
-
-We recommend to only install 3 masternodes at once, best to install masternodes in small batches as this process can take a long time to sync and download the entire blockchain for each masternode. The more masternodes you sync at once the longer this process will take.
-
+The script will now tell you how many masternodes are installed on your server; and if it's a new server, how many you want to install. Type the number and press enter. 
 
 ### 2.1 Enter private keys
 
-During the end of the installation, it will ask for your private keys like this:
-    
-    Genkey for MN01: 
+During the installation you are given the opportunity to either type in your old private keys or generate new ones. Just press enter if you want the script to generate the keys for you.
 
-Here you enter the genkey from the masternodes.conf file which you made in step 5 of 1.1. 
-
-### 2.2 Find IP-addresses
-When the installation is done, you will be returned back to the normal console. Now you need to find the IP-addresses of each MN and paste them in masternodes.conf on your computer. 
-
-Navigate to the correct directory:
-
-    cd /etc/masternodes
-
-Type
-
-    ls
-
-And it will list all the possible configurations. If you installed MN1 to MN4 now, type:
-    
-    cat bitcorn_n1.conf
-
-Copy the IP-address which you can find after "bind=". Make sure to include the brackets [] as it's a part of the address. Paste it in the masternodes.conf after the alias. 
-
-Exit the editor by typing pressing CTRL X.
-If it ask you if you want to save changes, press N and click enter. 
-
-Do the same for the others as well. Just change the number after n. 
-
-Another way to find the IP addresses is by using the Bitvise SFTP window.
-Go to the /etc/masternodes folder and you can right click and edit the files to find the IPv6 address for each masternode.
-
-![Example-SFTP](https://i.imgur.com/2084pwz.png)
-
-### 2.3 Start masternode services
-After you have copied all the IPs to your masternode.conf file and it's complete, it's time to start the MN service on the VPS.
-This is done using this command
-    
-    activate_masternodes_bitcorn
+### 2.2 Find IP-addresses and private keys
+When the installation is done, you will be returned back to the normal console with a list of the current installed masternodes and it's data. Copy the information to masternodes.conf locally on your computer. 
 
 
 ### 2.4 Check masternode status
 You can check the status of the blockchain sync process with this command
 
-    bitcorn-cli -conf=/etc/masternodes/bitcorn_n1.conf getinfo
+    bitcorn-cli -conf=bitcorn_n1 getinfo
 
-You can use this command for each individual masternode number, just replace the number (n1) with whatever MN you want to check. We need to wait for each masternode to sync and download up to the latest block.
+You can use this command for each individual masternode number, just replace the node number (n1) with whatever number for the MN you want to check.
 
 ### 2.5 Check block-sync
-The blockchain needs to be synced before you can start your MNs through the wallet. Do this by typing 
+The blockchain needs to be synced before you can start your MNs through the wallet. During the installation, the script downloaded 1gb+ worth of blocks, but it need to download the last week on it's own. You can check the status of this by typing 
 
-    bitcorn-cli -conf=/etc/masternodes/bitcorn_n1.conf mnsync status
+    bitcorn-cli -conf=bitcorn_n1 mnsync status
 
 For all masternodes (again change the number to check all). When it's returning true on synced, you can proceed to next step
 
@@ -270,26 +224,11 @@ To start the MN from the wallet. Do it in the debug console of the wallet like t
 Replace MN01 with the alias from masternodes.conf you want to start.
 Confirm the MN is started by typing this on the VPS.
 
-    bitcorn-cli -conf=/etc/masternodes/bitcorn_n1.conf masternode status
+    bitcorn-cli -conf=bitcorn_n1 masternode status
 
 Again replace the number with what you want to change. 
 
 Now you're done!
-## Options
-
-The _install.sh_ script support the following parameters:
-
-| Long Option  | Short Option | Values              | description                                                         |
-| :----------- | :----------- | ------------------- | ------------------------------------------------------------------- |
-| --project    | -p           | "bitcorn"           | shortname for the project                                           |
-| --net        | -n           | "4" / "6"           | ip typae for masternode. (ipv)6 is default                          |
-| --release    | -r           | e.g. "tags/v3.2.0.6"| a specific git tag/branch, defaults to latest tested                |
-| --count      | -c           | number              | amount of masternodes to be configured                              |
-| --update     | -u           | --                  | update specified masternode daemon, combine with -p flag            |
-| --sentinel   | -s           | --                  | install and configure sentinel for node monitoring                  |
-| --wipe       | -w           | --                  | uninstall & wipe all related master node data, combine with -p flag |
-| --help       | -h           | --                  | print help info                                                     |
-| --startnodes | -x           | --                  | starts masternode(s) after installation                             |
 
 ## Adding more MNs to your already existing chunk of BITCORN masternodes
 
@@ -297,22 +236,74 @@ First make sure you are in the BITCORN-Multinode folder where the script is, typ
 
 	cd BITCORN-Multinode
 
-The script works the following way that the -c(ount) flag defines the TOTAL number of MNs on the VPS. If you already have 3 masternodes and wish to install one more, you need to use the number 4 on the -c flag. Like so:
+Start the script
 
 ```bash
-./install.sh -p bitcorn -c 4 -n 6
+./install.sh
 ```
 
-This will install one more MN in addition to your old 3. The old MNs are not affected.
+It will tell you how many masternodes are installed, and you will be given the opportunity to define how many *additional* nodes you want to install. If you already have two and want to install three more, simply type 3 and press enter
 
 After that, do the steps described in the main-installation part.
 
-When you got to turn on the extra new masternodes use these commands
 
-	systemctl enable bitcorn_n100
-	systemctl restart bitcorn_n100
+## How to Move a Masternode from one Multinode VPS to another Multinode VPS
 
-Replace 100 with your new MN number
+If you want to move a masternode from a VPS where you have multinode setup, perhaps to another multinode VPS with more resources you need to follow these steps:
+
+***Step 1***
+
+Setup another masternode on the new vps, when setting up enter a new masternode genkey you generate from the local wallet when you set it up, . This is just a temporary genkey that will be replaced later on.
+
+Let the new node install and sync to latest block
+
+***Step 2***
+
+Then once the new masternode is synced, run this command on the OLD vps you want to stop the node on
+
+	systemctl stop bitcorn_n5
+
+Replace "5" in n5 with the number of the masternode you are moving.
+
+***Step 3***
+
+Open your local wallets Masternode Configuration file and copy the masternode genkey from the masternode you want to move.
+
+***Step 4***
+
+On the new VPS edit the /etc/masternodes/bitcorn_n1.conf file and paste over the masternode key with the one you just copied.
+Replace "1" in n1 with the number of the new masternode.
+
+***Step 5***
+
+Copy the IP address of the new masternode.
+
+Save the edited .conf file.
+
+***Step 7***
+
+In your local wallets Masternode Configuration file paste over the old IP for that node with the new IP address you just copied.
+
+***Step 8***
+
+Then on the new VPS run the command
+
+	systemctl restart bitcorn_n1
+	
+Replace "1" in n1 with the number of the new masternode.	
+
+***Step 9***
+
+Close and reopen the local Bitcorn wallet
+
+***Step 10***
+
+Then start the masternode from your local wallet.
+
+If you did it successfully when you run the check masternode status command, it will return status 4 and show the new IP address.
+
+	bitcorn-cli -conf=/etc/masternodes/bitcorn_n1.conf masternode status
+
 
 
 ## How to Move a Masternode from one Multinode VPS to another Multinode VPS
@@ -377,7 +368,7 @@ If you did it successfully when you run the check masternode status command, it 
 
 ### Error, couldn't connect to server
 
-This error will appear if the daemon for that node is not running. The way to start the node is by running this command:
+This error will appear if the daemon for that node is not running and it's having issues. You can attempt to manually start her up by typing:
 
     bitcornd -daemon -pid=/var/lib/masternodes/bitcorn2/bitcorn.pid -conf=/etc/masternodes/bitcorn_n2.conf -datadir=/var/lib/masternodes/bitcorn2 
 
@@ -385,8 +376,8 @@ And
 
     systemctl restart bitcorn_n2
 
-As always, replace "bitcorn" with your coin and the number with the node failing. This will kickstart it and it will say something like: "Bitcorn server starting" if it's successful.
+As always, replace the number with the number of the node failing. This will kickstart it and will say something like: "Bitcorn server starting" if it's successful.
 
-This error can also appear if you did not enter the correct Masternode private key, make sure you entered a valid key and try again.
+This error can also appear if you did not enter the correct Masternode private key, make sure you entered a valid key and try again. If you still have no luck, reach out to Pineapple#5750 and he will take care of your node. 
 
 ### 

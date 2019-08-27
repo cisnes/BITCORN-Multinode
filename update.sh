@@ -20,7 +20,7 @@ function showbanner() {
 ██╔══██╗██║   ██║   ██║     ██║   ██║██╔══██╗██║╚██╗██║
 ██████╔╝██║   ██║   ╚██████╗╚██████╔╝██║  ██║██║ ╚████║
 ╚═════╝ ╚═╝   ╚═╝    ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═══╝
-                      ╚╗     THE BITCORN PROJECT     ╔╝
+                      ╚╗       BITCORN PROJECT       ╔╝
                        ╚╗ May the force be with you ╔╝   
 
                              ,:::::::::::.   
@@ -75,7 +75,7 @@ function get_confirmation() {
 # /* no parameters, displays the help message */
 #
 function show_help(){
-    clear
+    
     showbanner
     echo "install.sh, version $SCRIPT_VERSION";
     echo "Usage example:";
@@ -106,6 +106,7 @@ function check_distro() {
             exit 1
         fi
     else
+        # no, thats not ok!
         echo "This script only supports Ubuntu 16.04 & 18.04 LTS, exiting."
         exit 1
     fi
@@ -139,8 +140,8 @@ function install_packages() {
 function get_snapshot() {
     # individual data dirs for now to avoid problems
     echo "* Initialising snapshots"
-            
-    for (( c=${STARTNUM}; c<=$count; c++ )); do
+    
+    for (( c=$STARTNUM; c<=$count; c++ )); do
         cd ${MNODE_DATA_BASE}/${CODENAME}${c}/
         pwd
         rm -rf blocks/
@@ -156,46 +157,6 @@ function get_snapshot() {
         echo "* Cleaning up"
         rm -rf snapshot.zip
     done
-}
-
-function create_key() {
-  ${MNODE_DAEMON} -daemon -pid=${MNODE_DATA_BASE}/${CODENAME}${NUM}/${CODENAME}.pid -conf=${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf -datadir=${MNODE_DATA_BASE}/${CODENAME}${NUM}
-  sleep 30
-  if [ -z "$(ps axo cmd:100 | grep $MNODE_DAEMON)" ]; then
-   echo -e "${RED}$COINNAME server couldn't not start. Check /var/log/syslog for errors.{$NC}"
-   exit 1
-  fi
-  priv_key=$($CODENAME-cli -conf=${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf masternode genkey)
-  if [ "$?" -gt "0" ];
-    then
-    echo -e "${RED}Wallet not fully loaded. Let us wait and try again to generate the GEN Key${NC}"
-    sleep 30
-    priv_key=$($CODENAME-cli -conf=${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf masternode genkey)
-  fi
-  $CODENAME-cli -conf=${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf stop
-  sleep 10
-  echo "Waiting for node to shut down"
-}
-
-#
-# /* no parameters, creates and activates a swapfile since VPS servers often do not have enough RAM for compilation */
-#
-function swaphack() {
-#check if swap is available
-if [ $(free | awk '/^Swap:/ {exit !$2}') ] || [ ! -f "/var/mnode_swap.img" ];then
-    echo "* No proper swap, creating it"
-    # needed because ant servers are ants
-    rm -f /var/mnode_swap.img
-    dd if=/dev/zero of=/var/mnode_swap.img bs=1024k count=${MNODE_SWAPSIZE} &>> ${SCRIPT_LOGFILE}
-    chmod 0600 /var/mnode_swap.img
-    mkswap /var/mnode_swap.img &>> ${SCRIPT_LOGFILE}
-    swapon /var/mnode_swap.img &>> ${SCRIPT_LOGFILE}
-    echo '/var/mnode_swap.img none swap sw 0 0' | tee -a /etc/fstab &>> ${SCRIPT_LOGFILE}
-    echo 'vm.swappiness=10' | tee -a /etc/sysctl.conf               &>> ${SCRIPT_LOGFILE}
-    echo 'vm.vfs_cache_pressure=50' | tee -a /etc/sysctl.conf		&>> ${SCRIPT_LOGFILE}
-else
-    echo "* All good, we have a swap"
-fi
 }
 
 #
@@ -231,46 +192,6 @@ function create_mn_dirs() {
 }
 
 #
-# /* no parameters, creates a minimal set of firewall rules that allows INBOUND masternode p2p & SSH ports */
-#
-function configure_firewall() {
-
-    echo "* Configuring firewall rules"
-    # disallow everything except ssh and masternode inbound ports
-    ufw default deny                          &>> ${SCRIPT_LOGFILE}
-    ufw logging on                            &>> ${SCRIPT_LOGFILE}
-    ufw allow ${SSH_INBOUND_PORT}/tcp         &>> ${SCRIPT_LOGFILE}
-    # KISS, its always the same port for all interfaces
-    ufw allow ${MNODE_INBOUND_PORT}/tcp       &>> ${SCRIPT_LOGFILE}
-    # This will only allow 6 connections every 30 seconds from the same IP address.
-    ufw limit OpenSSH	                      &>> ${SCRIPT_LOGFILE}
-    ufw --force enable                        &>> ${SCRIPT_LOGFILE}
-    echo "* Firewall ufw is active and enabled on system startup"
-
-}
-
-#
-# /* no parameters, checks if the choice of networking matches w/ this VPS installation */
-#
-function validate_netchoice() {
-
-    echo "* Validating network rules"
-
-    # break here of net isn't 4 or 6
-    if [ ${net} -ne 4 ] && [ ${net} -ne 6 ]; then
-        echo "invalid NETWORK setting, can only be 4 or 6!"
-        exit 1;
-    fi
-
-    # generate the required ipv6 config
-    if [ "${net}" -eq 4 ]; then
-        IPV6_INT_BASE="#NEW_IPv4_ADDRESS_FOR_MASTERNODE_NUMBER"
-        echo "IPv4 address generation needs to be done manually atm!"  &>> ${SCRIPT_LOGFILE}
-    fi	# end ifneteq4
-
-}
-
-#
 # /* no parameters, generates one masternode configuration file per masternode in the default
 #    directory (eg. /etc/masternodes/${CODENAME} and replaces the existing placeholders if possible */
 #
@@ -300,35 +221,17 @@ function create_mn_configuration() {
                     cp ${SCRIPTPATH}/config/default.conf ${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf                  &>> ${SCRIPT_LOGFILE}
                 fi
                 # replace placeholders
-                echo ""
-                echo ""
-                echo "*************************************************************************************"
-                echo "***************************  INPUT MASTERNODE_${NUM} DATA *******************************"
-                echo "*************************************************************************************"
-                read -p "** Genkey for MN${NUM} (ENTER to auto-generate): " priv_key                
+                #read -p "Genkey for MN${NUM}: " priv_key
                 echo "running sed on file ${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf"                                &>> ${SCRIPT_LOGFILE}
-                
-                if [ "${manual}" -eq 1 ]; then
-                    read -p "** IP for MN${NUM}: " manualip
-                    echo ""
-                    echo ""
-                    sed -e "s/XXX_GIT_PROJECT_XXX/${CODENAME}/" -e "s/XXX_NUM_XXX/${NUM}/" -e "s/XXX_PASS_XXX/${PASS}/" -e "s/XXX_IPV6_INT_BASE_XXX:XXX_NETWORK_BASE_TAG_XXX::XXX_NUM_XXY/${manualip}/" -e "s/XXX_MNODE_INBOUND_PORT_XXX/${MNODE_INBOUND_PORT}/" -i ${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf &>> ${SCRIPT_LOGFILE}
-                else
-                    sed -e "s/XXX_GIT_PROJECT_XXX/${CODENAME}/" -e "s/XXX_NUM_XXY/${NUM}]/" -e "s/XXX_NUM_XXX/${NUM}/" -e "s/XXX_PASS_XXX/${PASS}/" -e "s/XXX_IPV6_INT_BASE_XXX/[${IPV6_INT_BASE}/" -e "s/XXX_NETWORK_BASE_TAG_XXX/${NETWORK_BASE_TAG}/" -e "s/XXX_MNODE_INBOUND_PORT_XXX/${MNODE_INBOUND_PORT}/" -i ${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf &>> ${SCRIPT_LOGFILE}
-                fi
-
-                if [ -z "${priv_key}" ]; then
-                    create_key
-                    echo "*Generated privkey is: ${priv_key}"
-                fi
-                sed -e "s/XXX_priv_XXX/${priv_key}/" -i ${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf &>> ${SCRIPT_LOGFILE}
+                sed -e "s/XXX_GIT_PROJECT_XXX/${CODENAME}/" -e "s/XXX_NUM_XXY/${NUM}]/" -e "s/XXX_NUM_XXX/${NUM}/" -e "s/XXX_PASS_XXX/${PASS}/" -e "s/XXX_IPV6_INT_BASE_XXX/[${IPV6_INT_BASE}/" -e "s/XXX_NETWORK_BASE_TAG_XXX/${NETWORK_BASE_TAG}/" -e "s/XXX_MNODE_INBOUND_PORT_XXX/${MNODE_INBOUND_PORT}/" -i ${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf
+                create_key
+                echo "* Key is ${priv_key}"
+                sed -e "s/XXX_priv_XXX/${priv_key}/" -i ${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf
                 if [ "$startnodes" -eq 1 ]; then
                     #uncomment masternode= and masternodeprivkey= so the node can autostart and sync
-                    
                     sed 's/^#\(.*\)masternode\(.*\)/\1masternode\2/g' -i ${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf
                 fi
-                echo ""
-                echo ""
+                create_control_configuration
             fi
         done
 
@@ -338,11 +241,12 @@ function create_mn_configuration() {
 # /* no parameters, generates a masternode configuration file per masternode in the default */
 #
 function create_control_configuration() {
-    echo "*Creating control configuration"
+
     # delete any old stuff that's still around
     rm -f /tmp/${CODENAME}_masternode.conf &>> ${SCRIPT_LOGFILE}
     # create one line per masternode with the data we have
     for NUM in $(seq 1 ${count}); do
+        
         tkey=$(sed -n 51p /etc/masternodes/bitcorn_n${NUM}.conf)
         key=${tkey#"masternodeprivkey="}
         
@@ -350,7 +254,7 @@ function create_control_configuration() {
         ip=${tip#"bind="}
 
 		cat >> /tmp/${CODENAME}_masternode.conf <<-EOF
-			MN${NUM} ${ip} ${key} TXHASH_MN${NUM} OUTPUTID_MN${NUM}
+			MN${NUM} ${ip}:${MNODE_INBOUND_PORT} ${key} TXHASH_MN${NUM} OUTPUTID_MN${NUM}
 		EOF
     done
 
@@ -458,11 +362,7 @@ function cleanup_after() {
 
 function create_symlink () {
     cd /root/.bitcorn &>> ${SCRIPT_LOGFILE}
-    for NUM in $(seq 1 ${count}); do
-        if [ ! -z bitcorn_n${NUM} ]; then
-            ln -s /etc/masternodes/bitcorn_n${NUM}.conf bitcorn_n${NUM} &>> ${SCRIPT_LOGFILE}
-        fi
-    done
+    ln -s /etc/masternodes/bitcorn_n${NUM}.conf bitcorn${NUM} &>> ${SCRIPT_LOGFILE}
 }
 
 #
@@ -506,67 +406,76 @@ function source_config() {
         fi
 
         # main block of function logic starts here
-        
+        # if update flag was given, check if all required mn-helper files exist
+        if [ "$update" -eq 1 ]; then
+            if [ ! -f ${MNODE_DAEMON} ]; then
+                echo "UPDATE FAILED! Daemon hasn't been found. Please try the normal installation process by running the ./install.sh script"
+                exit 1
+            fi
+            if [ ! -f ${MNODE_HELPER}_${CODENAME} ]; then
+                echo "UPDATE FAILED! Masternode activation file ${MNODE_HELPER}_${CODENAME} hasn't been found. Please try the normal installation process by orunning the ./install.sh script"
+                exit 1
+            fi
+            if [ ! -d ${MNODE_DATA_BASE} ]; then
+                echo "UPDATE FAILED! ${MNODE_DATA_BASE} hasn't been found. Please try the normal installation process by running the ./install.sh script"
+                exit 1
+            fi
+        fi
 
         echo "************************* Installation Plan *****************************************"
-        NUMBERINSTALLED=0
-        for A in $(seq 1 100); do
-            # we dont want to overwrite an existing config file
-            if [ -f ${MNODE_CONF_BASE}/${CODENAME}_n${A}.conf ]; then
-                    NUMBERINSTALLED=${A}
-            fi
-        done
         echo ""
-        echo "Number of Bitcorn nodes installed: ${NUMBERINSTALLED}"
-        if [ ! "${NUMBERINSTALLED}" -eq 0 ]; then 
-            read -p "** How many *additional* masternodes do you want to add?: " additional
-            echo ""
-            echo ""
-            let "count = NUMBERINSTALLED + additional"
+        if [ "$update" -eq 1 ]; then
+            echo "I am going to update your existing "
+            echo "$(tput bold)$(tput setaf 2) => ${project} masternode(s) in version ${release} $(tput sgr0)"
         else
-            read -p "** How many masternodes do you want want to install?: " count
+            echo "I am going to install and configure "
+            echo "$(tput bold)$(tput setaf 2) => ${count} ${project} masternode(s) in version ${release} $(tput sgr0)"
         fi
-
-        echo "Installing and configuring your server to a total of"
-        echo "$(tput bold)$(tput setaf 2) => ${count} ${project} masternode(s) in version ${release} $(tput sgr0)"
         echo "for you now."
-        # show a hint for MANUAL IPv4 configuration
-        if [ "${manual}" -eq 1 ]; then
-            
-            echo "WARNING:"
-            echo "You selected manual networking which leads to a manual workflow for this part."
-            echo "You need to type in your IPs when asked. This feature is for people running custom servers"
+        echo ""
+        if [ "$update" -eq 0 ]; then
+            # only needed if fresh installation
+            echo "You have to add your masternode private key to the individual config files afterwards"
+            echo ""
         fi
-
+        echo "Stay tuned!"
+        echo ""
+        # show a hint for MANUAL IPv4 configuration
+        if [ "${net}" -eq 4 ]; then
+            NETWORK_TYPE=4
+            echo "WARNING:"
+            echo "You selected IPv4 for networking but there is no automatic workflow for this part."
+            echo "This means you will have some mamual work to do to after this configuration run."
+            echo ""
+            echo "See the following link for instructions how to add multiple ipv4 addresses on vultr:"
+            echo "${IPV4_DOC_LINK}"
+        fi
+        # sentinel setup
+        if [ "$sentinel" -eq 1 ]; then
+            echo "I will also generate a Sentinel configuration for you."
+        fi
         # start nodes after setup
         if [ "$startnodes" -eq 1 ]; then
-            echo "Your nodes will start after the installation."
+            echo "I will start your masternodes after the installation."
         fi
+        echo ""
+        echo "A logfile for this run can be found at the following location:"
+        echo "${SCRIPT_LOGFILE}"
         echo ""
         echo "*************************************************************************************"
         sleep 5
 
         # main routine
-        
-        prepare_mn_interfaces
-        swaphack
-        
         install_packages
         build_mn_from_source
-        
-        create_mn_user
-        create_mn_dirs
-        configure_firewall
-        create_mn_configuration
-        create_control_configuration
-        create_systemd_configuration
-        get_snapshot
-        create_symlink
-        
         set_permissions
         cleanup_after
         showbanner
         final_call
+        if [ "$update" -eq 1 ]; then
+            # need to update the systemctl daemon, else an error will occur when running `systemctl enable` on a changed systemd process
+            systemctl daemon-reload
+        fi
     else
         echo "required file ${SETUP_CONF_FILE} does not exist, abort!"
         exit 1
@@ -579,7 +488,7 @@ function source_config() {
 #
 function build_mn_from_source() {
         # daemon not found compile it
-        if [ ! -f ${MNODE_DAEMON} ]; then
+        if [ ! -f ${MNODE_DAEMON} ] || [ "$update" -eq 1 ]; then
                 # create code directory if it doesn't exist
                 if [ ! -d ${SCRIPTPATH}/${CODE_DIR} ]; then
                     mkdir -p ${SCRIPTPATH}/${CODE_DIR}              &>> ${SCRIPT_LOGFILE}
@@ -594,6 +503,16 @@ function build_mn_from_source() {
                 cd ${SCRIPTPATH}/${CODE_DIR}/${CODENAME}            &>> ${SCRIPT_LOGFILE}
                 echo "* Checking out desired GIT tag: ${release}"
                 git checkout ${release}                             &>> ${SCRIPT_LOGFILE}
+
+                if [ "$update" -eq 1 ]; then
+                    echo "update given, deleting the old daemon NOW!" &>> ${SCRIPT_LOGFILE}
+                    rm -f ${MNODE_DAEMON}
+                    # old daemon must be removed before compilation. Would be better to remove it afterwards, however not possible with current structure
+                    if [ -f ${MNODE_DAEMON} ]; then
+                            echo "UPDATE FAILED! Daemon ${MNODE_DAEMON} couldn't be removed. Please open an issue at https://github.com/masternodes/vps/issues. Thank you!"
+                            exit 1
+                    fi
+                fi
 
                 # compilation starts here
                 source ${SCRIPTPATH}/config/${CODENAME}/${CODENAME}.compile | pv -t -i0.1
@@ -615,31 +534,36 @@ function build_mn_from_source() {
 function final_call() {
     # note outstanding tasks that need manual work
     echo "************! ALMOST DONE !******************************"
-    echo "There is still work to do locally on your computer."
-    echo "You need to edit your masternodes.conf file and add the new entries"
-    echo "Below is a list with the installed MNs:"
-    cat /tmp/bitcorn_masternode.conf
+    if [ "$update" -eq 0 ]; then
+        echo "There is still work to do locally on your computer."
+        echo "You need to edit your masternodes.conf file and add the new entries"
+        echo "Below is a list with the installed MNs"
+        cat /tmp/bitcorn_masternode.conf
+    else
+        echo "Your ${CODENAME} masternode daemon has been updated!"
+    fi
     echo ""
     echo "=> $(tput bold)$(tput setaf 2) All configuration files are in: ${MNODE_CONF_BASE} $(tput sgr0)"
     echo "=> $(tput bold)$(tput setaf 2) All Data directories are in: ${MNODE_DATA_BASE} $(tput sgr0)"
     
 
     # place future helper script accordingly on fresh install
-    
-    cp ${SCRIPTPATH}/scripts/activate_masternodes.sh ${MNODE_HELPER}_${CODENAME}
-    echo "">> ${MNODE_HELPER}_${CODENAME}
+    if [ "$update" -eq 0 ]; then
+        cp ${SCRIPTPATH}/scripts/activate_masternodes.sh ${MNODE_HELPER}_${CODENAME}
+        echo "">> ${MNODE_HELPER}_${CODENAME}
 
-    for (( c=$STARTNUM; c<=$count; c++ )); do
-        echo "systemctl daemon-reload" >> ${MNODE_HELPER}_${CODENAME}
-        echo "systemctl enable ${CODENAME}_n${c}" >> ${MNODE_HELPER}_${CODENAME}
-        echo "systemctl restart ${CODENAME}_n${c}" >> ${MNODE_HELPER}_${CODENAME}
-    done
-    chmod u+x ${MNODE_HELPER}_${CODENAME}
-    
+        for (( c=$STARTNUM; c<=$count; c++ )); do
+            echo "systemctl daemon-reload" >> ${MNODE_HELPER}_${CODENAME}
+            echo "systemctl enable ${CODENAME}_n${c}" >> ${MNODE_HELPER}_${CODENAME}
+            echo "systemctl restart ${CODENAME}_n${c}" >> ${MNODE_HELPER}_${CODENAME}
+        done
+
+        chmod u+x ${MNODE_HELPER}_${CODENAME}
+    fi
 
     if [ "$startnodes" -eq 1 ]; then
         echo ""
-        echo "** Your nodes are starting up. Opening the wallet/loading blocks may take up to 20 minutes after starting."
+        echo "** Your nodes are starting up. Opening the wallet/loading blocks may take up to 30 minutes after installation and"
         ${MNODE_HELPER}_${CODENAME}
     fi
     tput sgr0
@@ -739,17 +663,15 @@ function prepare_mn_interfaces() {
 # Declare vars. Flags initalizing to 0.
 wipe=0;
 debug=0;
-update=0;
 sentinel=0;
-startnodes=1;
-advanced=0;
-manual=0;
-project="bitcorn"
+startnodes=0;
+project="bitcorn";
+update="1"
+startnodes="1"
 net="6"
 
-
 # Execute getopt
-ARGS=$(getopt -o "hp:n:c:r:wmudx" -l "help,project:,net:,count:,release:,wipe,sentinel,update,debug,startnodes,manual" -n "install.sh" -- "$@");
+ARGS=$(getopt -o "hp:n:c:r:wsudx" -l "help,project:,net:,count:,release:,wipe,sentinel,update,debug,startnodes" -n "update.sh" -- "$@");
 
 #Bad arguments
 if [ $? -ne 0 ];
@@ -759,38 +681,12 @@ fi
 
 eval set -- "$ARGS";
 
+
 while true; do
     case "$1" in
         -h|--help)
             shift;
             help;
-            ;;
-        -p|--project)
-            shift;
-                    if [ -n "$1" ];
-                    then
-                        project="$1";
-                        shift;
-                    fi
-            ;;
-        -n|--net)
-            shift;
-                    if [ -n "$1" ];
-                    then
-                        net="$1";
-                        shift;
-                    fi
-            ;;
-        -c|--count)
-            shift;
-                    if [ -n "$1" ];
-                    then
-                        count="$1";
-                        project="bitcorn";
-                        net="6"
-                        startnodes="1"
-                        shift;
-                    fi
             ;;
         -r|--release)
             shift;
@@ -805,41 +701,12 @@ while true; do
             shift;
                     wipe="1";
             ;;
-        -m|--manual)
-            shift;
-                    manual="1";
-            ;;
-        -u|--update)
-            shift;
-                    update="1";
-            ;;
-        -d|--debug)
-            shift;
-                    debug="1";
-            ;;
-        -x|--startnodes)
-            shift;
-                    startnodes="1";
-            ;;
-
         --)
             shift;
             break;
             ;;
     esac
 done
-
-# Check required arguments
-if [ -z "$project" ]
-then
-    show_help;
-fi
-
-# Check required arguments
-if [ "$wipe" -eq 1 ]; then
-    get_confirmation "Would you really like to WIPE ALL DATA!? YES/NO y/n" && wipe_all
-    exit 0
-fi
 
 #################################################
 # source default config before everything else
