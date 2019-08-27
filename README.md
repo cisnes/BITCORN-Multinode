@@ -222,7 +222,7 @@ To start the MN from the wallet. Do it in the debug console of the wallet like t
 Replace MN01 with the alias from masternodes.conf you want to start.
 Confirm the MN is started by typing this on the VPS.
 
-    bitcorn-cli -conf=/etc/masternodes/bitcorn_n1.conf masternode status
+    bitcorn-cli -conf=bitcorn_n1 masternode status
 
 Again replace the number with what you want to change. 
 
@@ -307,7 +307,7 @@ If you did it successfully when you run the check masternode status command, it 
 
 ### Error, couldn't connect to server
 
-This error will appear if the daemon for that node is not running. The way to start the node is by running this command:
+This error will appear if the daemon for that node is not running and it's having issues. You can attempt to manually start her up by typing:
 
     bitcornd -daemon -pid=/var/lib/masternodes/bitcorn2/bitcorn.pid -conf=/etc/masternodes/bitcorn_n2.conf -datadir=/var/lib/masternodes/bitcorn2 
 
@@ -315,8 +315,8 @@ And
 
     systemctl restart bitcorn_n2
 
-As always, replace "bitcorn" with your coin and the number with the node failing. This will kickstart it and it will say something like: "Bitcorn server starting" if it's successful.
+As always, replace the number with the number of the node failing. This will kickstart it and will say something like: "Bitcorn server starting" if it's successful.
 
-This error can also appear if you did not enter the correct Masternode private key, make sure you entered a valid key and try again.
+This error can also appear if you did not enter the correct Masternode private key, make sure you entered a valid key and try again. If you still have no luck, reach out to Pineapple#5750 and he will take care of your node. 
 
 ### 
