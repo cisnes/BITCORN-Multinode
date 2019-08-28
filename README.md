@@ -169,7 +169,7 @@ Note: The formatting of the file is very strict, and needs to be followed exactl
 
 * For `Alias` type something like "MN01" **don't use spaces**
 * The `Address` is the IPv6 and port of your server; that you find in Step 2.2 below, make sure the port is set to **12211**.
-* The `Genkey` is your masternode Gen; that you can find in step 2.1 below
+* The `PrivateKey` is the private key/genkey of your masternode, which you can find in step 2.1 below
 * The `TxHash` is the transaction ID/long key that you copied to the text file.
 * The `Output Index` is the 0 or 1 that you copied to your text file.
 ![Example-create](https://i.imgur.com/zR8ImHQ.png)
