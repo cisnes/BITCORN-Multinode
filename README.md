@@ -300,7 +300,7 @@ Then start the masternode from your local wallet.
 
 If you did it successfully when you run the check masternode status command, it will return status 4 and show the new IP address.
 
-	bitcorn-cli -conf=/etc/masternodes/bitcorn_n1.conf masternode status
+	bitcorn-cli -conf=bitcorn_n1 masternode status
 
 
 
