@@ -1,4 +1,4 @@
-# Bitcorn Multinode
+# Bitcorn Multinode V3
 
 ----
 ## What is multinode?
