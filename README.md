@@ -303,6 +303,67 @@ If you did it successfully when you run the check masternode status command, it 
 	bitcorn-cli -conf=bitcorn_n1 masternode status
 
 
+## How to update masternode core to a newer version
+
+If you want to update the BITCORN core on a VPS running the multinode setup, please follow the steps. Multinode 2.0+ required!
+
+***Step 1***
+
+Kill all bitcorn processes by typing:
+
+    killall -9 bitcornd
+
+***Step 2***
+
+Open the Multinode directory
+
+    cd BITCORN-Multinode
+
+***Step 3***
+
+Make the update file executable
+
+    chmod +x update.sh
+
+***Step 4***
+
+Start the update
+
+    ./update.sh
+
+This will take up to 30 minutes. You will see the Bitcorn logo once it's done.
+
+***Step 5*** 
+
+Start all nodes back up (do one at a time for faster loading)
+
+    systemctl start bitcorn_n1
+
+Repeat for the other nodes if you have any by replacing the number.
+Check status with:
+
+    bitcorn-cli -conf=/etc/masternodes/bitcorn_n1.conf getinfo
+
+Once you get a static block number (and not -1, it's finished loading the blocks)
+
+***Step 6*** 
+
+Activate your nodes from your local wallet
+
+Open your new wallet (v2.0), go to the Masternode tab, click on the node you want to start and click 'start'.
+
+***Step 7***
+
+Verify that your masternode have started by typing
+
+    bitcorn-cli -conf=/etc/masternodes/bitcorn_n1.conf getmasternodestatus
+
+You should see status 4.
+
+***Didn't work***
+
+Try step 1-6 again and if it's still not working, best solution is to reinstall your VPS and install it the normal way.
+
 
 # Troubleshooting
 
