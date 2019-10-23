@@ -360,9 +360,9 @@ Verify that your masternode have started by typing
 
 You should see status 4.
 
-***Didn't work***
+***If any issues:***
 
-Try step 1-6 again and if it's still not working, best solution is to reinstall your VPS and install it the normal way.
+Contact Pineapple on Discord.
 
 
 # Troubleshooting
