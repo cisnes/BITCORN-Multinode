@@ -21,7 +21,7 @@ function showbanner() {
 ██████╔╝██║   ██║   ╚██████╗╚██████╔╝██║  ██║██║ ╚████║
 ╚═════╝ ╚═╝   ╚═╝    ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═══╝
                       ╚╗     THE BITCORN PROJECT     ╔╝
-                       ╚╗ May the force be with you ╔╝   
+                       ╚╗ May the force be with you ╔╝      
 
                              ,:::::::::::.   
                        .::,:::::::::::::::  
@@ -56,7 +56,6 @@ EOF
 # confirmation message as optional parameter, asks for confirmation
 # get_confirmation && COMMAND_TO_RUN or prepend a message
 # */
-#
 function get_confirmation() {
     # call with a prompt string or use a default
     read -r -p "${1:-Are you sure? [y/N]} " response
@@ -165,12 +164,12 @@ function create_key() {
    echo -e "${RED}$COINNAME server couldn't not start. Check /var/log/syslog for errors.{$NC}"
    exit 1
   fi
-  priv_key=$($CODENAME-cli -conf=${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf masternode genkey)
+  priv_key=$($CODENAME-cli -conf=${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf createmasternodekey)
   if [ "$?" -gt "0" ];
     then
     echo -e "${RED}Wallet not fully loaded. Let us wait and try again to generate the GEN Key${NC}"
     sleep 30
-    priv_key=$($CODENAME-cli -conf=${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf masternode genkey)
+    priv_key=$($CODENAME-cli -conf=${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf createmasternodekey)
   fi
   $CODENAME-cli -conf=${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf stop
   sleep 10
@@ -306,6 +305,7 @@ function create_mn_configuration() {
                 echo "***************************  INPUT MASTERNODE_${NUM} DATA *******************************"
                 echo "*************************************************************************************"
                 read -p "** Genkey for MN${NUM} (ENTER to auto-generate): " priv_key                
+
                 echo "running sed on file ${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf"                                &>> ${SCRIPT_LOGFILE}
                 
                 if [ "${manual}" -eq 1 ]; then
@@ -321,6 +321,7 @@ function create_mn_configuration() {
                     create_key
                     echo "*Generated privkey is: ${priv_key}"
                 fi
+
                 sed -e "s/XXX_priv_XXX/${priv_key}/" -i ${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf &>> ${SCRIPT_LOGFILE}
                 if [ "$startnodes" -eq 1 ]; then
                     #uncomment masternode= and masternodeprivkey= so the node can autostart and sync
@@ -460,7 +461,7 @@ function create_symlink () {
     cd /root/.bitcorn &>> ${SCRIPT_LOGFILE}
     for NUM in $(seq 1 ${count}); do
         if [ ! -z bitcorn_n${NUM} ]; then
-            ln -s /etc/masternodes/bitcorn_n${NUM}.conf bitcorn_n${NUM} &>> ${SCRIPT_LOGFILE}
+            ln -s /etc/masternodes/bitcorn_n${NUM}.conf /root/.bitcorn/bitcorn_n${NUM} &>> ${SCRIPT_LOGFILE}
         fi
     done
 }
