@@ -158,26 +158,26 @@ For all masternodes (again change the number to check all). When it's returning 
 
 ***Step 3***
 * Open your local PC / Mac wallet and head to the Masternodes tab. In the bottom right corner, click "Create Masternode Controller". You should see a pop-up like the following:
-![Example-create](https://imgur.com/gXjZnyM)
+![Example-create](https://i.imgur.com/gXjZnyM.png?1)
 ***
 
 ***step 4***
 * Click next, and you will see a field where you can enter your alias of your node. This is just a visual representation/name of your node in the wallet, so you stand freely to choose whatever you'd like. Though, it is recommended to numericly mark them for easier debugging.
 
-![Example-console](https://imgur.com/Qh2REfW)
+![Example-console](https://i.imgur.com/Qh2REfW.png?1)
 ***
 
 ***Step 5***
 
 * Click next, and you will see a field to enter your masternodes IP and port. Leave the port at 12211 and paste your IP address the masternode install script gave you once it was completed. 
 
-![Example-console](https://imgur.com/jWtDXAg)
+![Example-console](https://i.imgur.com/jWtDXAg.png?1)
 ***
 
 ***Step 6***
 * Click next and you should see the pop-up disappearing and a banner at the bottom telling you its a success.
 
-![Example-console](https://imgur.com/U6XtOAp)
+![Example-console](https://i.imgur.com/U6XtOAp.png)
 ***
 
 ***Step 7***
