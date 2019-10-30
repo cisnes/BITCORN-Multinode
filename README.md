@@ -108,83 +108,16 @@ Below is a guide meant to help you install your masternodes
 ![Example-LoginBitvise](https://i.imgur.com/BJAGVr6.png)
 ***
 
-### 1.0 - Clone and open project on your VPS
-
+### 1.0 Install the masternodes
 Paste the code below into the Bitvise terminal then press enter
 
     git clone https://github.com/BITCORNProject/BITCORN-Multinode.git && cd BITCORN-Multinode
 
 ![Example-clone](https://i.imgur.com/tAxaz2I.png)
-## IMPORTANT
-
-If you already have private keys and txhashes from your existing masternodes you want to migrate over to the script, you can reuse these. Just shut down the old servers and skip to step 2.0.
-
-### 1.1 - Preparing the Local wallet
-
-***Step 1***
-* Download and install on the local PC / mac the Bitcorn wallet from [here](https://github.com/BITCORNProject/BITCORN/releases)
-***
-
-***Step 2***
-* Send EXACTLY 10,000,000 Bitcorn to a new receiving address within your wallet. You must wait for 16 confirmations on the transaction before the masternode can be started.
-* To make a new receiving address from inside the wallet go to - File > Receiving Addresses > New.
-***
-
-***Step 3***
-* Create a text document to temporarily store information that you will need.
-***
-
-***step 4***
-* Go to the console within the wallet, Tools > Debug Console 
-
-![Example-console](https://i.imgur.com/sXWA7Ym.png)
-***
-
-***Step 5***
-
-Back in the console type the command below and press enter
-
-    masternode outputs
-	
-***
-
-***Step 6***
-* Copy the long key (this is your transaction ID) and the 0 or 1 at the end (this is your output index)
-* Paste these into the text document you created earlier as you will need them in the next step.
-***
-
-***Step 7***
-* Go to the tools tab within the wallet and click "Open Masternode Configuration File"
-![Example-create](https://i.imgur.com/7wVJrIG.png)
-***
-
-***Step 8***
-
-Enter the following data in this file for every masternode we want to setup as follows:
-
-    MN01 IPGOESHERE PRIVATEKEYGOESHERE TXHASHGOESHERE OUTPUTIDGOESHERE
-    MN02 IPGOESHERE PRIVATEKEYGOESHERE TXHASHGOESHERE OUTPUTIDGOESHERE
-
-Note: The formatting of the file is very strict, and needs to be followed exactly as the example below. Do not have any empty lines in the project and do one MN per line:
-
-* For `Alias` type something like "MN01" **don't use spaces**
-* The `Address` is the IPv6 and port of your server; that you find in Step 2.2 below, make sure the port is set to **12211**.
-* The `PrivateKey` is the private key/genkey of your masternode, which you can find in step 2.1 below
-* The `TxHash` is the transaction ID/long key that you copied to the text file.
-* The `Output Index` is the 0 or 1 that you copied to your text file.
-![Example-create](https://i.imgur.com/zR8ImHQ.png)
-
-Click "File Save".
-Close the Bitcorn Wallet.
-Open the Bitcorn Wallet again.
-***
-
-### 2.0 Install the masternodes
-By now you have prepared your wallet with the necessary variables and it's time to initialize script and make masternodes. 
 
 The first installation of this script will take up to 30mins to get everything set up, so be patient. Later installations of additional masternodes will take a couple of minutes.
 
-The script you will be using is in the *BITCORN-Multinode* folder and is called install.sh. You're calling this by using ./ as a prefix. The script can take one flag which is -m by running `./install.sh -m`. By calling that flag you will be given the opportunity to enter your own IP addresses during the installation. This can be useful if you are running your own servers, and not through vultr. Do NOT type that unless you have your own IP-pool. 
+The script you will be using is in the *BITCORN-Multinode* folder and is called install.sh. You're calling this by using ./ as a prefix. The script can take one flag which is -m by running `./install.sh -m`. By calling that flag you will be given the opportunity to enter your own IP addresses during the installation. This can be useful if you are running your own servers, and not through Vultr. Do NOT type that unless you have your own IP-pool. 
 
 The following command will start the script
 
@@ -195,10 +128,6 @@ The script will now tell you how many masternodes are installed on your server; 
 ### 2.1 Enter private keys
 
 During the installation you are given the opportunity to either type in your old private keys or generate new ones. Just press enter if you want the script to generate the keys for you. You will be handed the keys once the installation is finished. 
-
-### 2.2 Find IP-addresses and private keys
-When the installation is done, you will be returned back to the normal console with a list of the current installed masternodes and it's data. Copy the information to masternodes.conf locally on your computer. 
-
 
 ### 2.4 Check masternode status
 You can check the status of the blockchain sync process with this command
@@ -212,40 +141,92 @@ The blockchain needs to be synced before you can start your MNs through the wall
 
     bitcorn-cli -conf=bitcorn_n1 mnsync status
 
-For all masternodes (again change the number to check all). When it's returning true on synced, you can proceed to next step
+For all masternodes (again change the number to check all). When it's returning true on IsBlockchainSynced, you can proceed to next step.
 
-### 2.6 Start masternode from wallet
-Before you start the masternodes from your local wallet, make sure you have closed the local wallet and re-opened it after saving your updated masternode.conf file.
+### 1.0 - Clone and open project on your VPS
+## IMPORTANT
 
-To start the MN from the wallet. Do it in the debug console of the wallet like this:
+### 1.1 - Preparing the Local wallet
 
-    startmasternode alias 0 MN01
+***Step 1***
+* Download and install on the local PC / mac the Bitcorn wallet from [here](https://github.com/BITCORNProject/BITCORN/releases)
+***
 
-Replace MN01 with the alias from masternodes.conf you want to start.
-Confirm the MN is started by typing this on the VPS.
+***Step 2***
+* Make sure you have 10M CORN free in your wallet (or more if you need to set up several nodes).
+***
 
-    bitcorn-cli -conf=bitcorn_n1 masternode status
+***Step 3***
+* Open your local PC / Mac wallet and head to the Masternodes tab. In the bottom right corner, click "Create Masternode Controller". You should see a pop-up like the following:
+![Example-create](https://imgur.com/gXjZnyM)
+***
 
-Again replace the number with what you want to change. 
+***step 4***
+* Click next, and you will see a field where you can enter your alias of your node. This is just a visual representation/name of your node in the wallet, so you stand freely to choose whatever you'd like. Though, it is recommended to numericly mark them for easier debugging.
 
-Now you're done!
+![Example-console](https://imgur.com/Qh2REfW)
+***
 
-## Adding more MNs to your already existing chunk of BITCORN masternodes
+***Step 5***
 
-First make sure you are in the BITCORN-Multinode folder where the script is, type the command
+* Click next, and you will see a field to enter your masternodes IP and port. Leave the port at 12211 and paste your IP address the masternode install script gave you once it was completed. 
 
-	cd BITCORN-Multinode
+![Example-console](https://imgur.com/jWtDXAg)
+***
 
-Start the script
+***Step 6***
+* Click next and you should see the pop-up disappearing and a banner at the bottom telling you its a success.
 
-```bash
-./install.sh
-```
+![Example-console](https://imgur.com/U6XtOAp)
+***
 
-It will tell you how many masternodes are installed, and you will be given the opportunity to define how many *additional* nodes you want to install. If you already have two and want to install three more, simply type 3 and press enter
+***Step 7***
+* Repeat step 1-6 for all the nodes you want to install. 
+***
 
-After that, do the steps described in the main-installation part.
+***Step 8***
 
+* After your installation on the VPS is finished, you will see a big CORN logo and lines like this. One line for each node installed on your VPS.
+
+    MN1 [2001:19f0:7923:43v1:67fd::1]:12211 2nxKSKTDXws1w6ksurlt62RuKMZLHJrxSPSWyv7Bby9XMsCdGTfC TXHASH_MN1 OUTPUTID_MN1
+
+Open up your masternodes.conf file locally on your computer. 
+* For windows: Go to Start > Run > %APPDATA%\BitCorn
+* For mac: Go to ~/Library/Application Support/BitCorn
+
+In this file you will see one line for each node initialized in your local wallet. These lines are very similar to what the masternode outputted once the install was finished. 
+***
+
+***Step 9***
+
+Copy the priv-key you got from your masternode and replace the one in masternodes.conf for each node. Privkey is the next string/text coming after :12211. 
+
+End state is when both masternodes.conf and the output on your VPS have similar IPs and priv-keys. (And only masternodes.conf have the txhash and outputid.)
+
+Note: Please note formatting of the file is very strict, and needs to be followed exactly as the example below. Do not have any empty lines in the project and do one MN per line:
+
+It should look like this:
+![Example-create](https://i.imgur.com/zR8ImHQ.png)
+
+Click "File Save".
+Close the Bitcorn Wallet.
+Open the Bitcorn Wallet again.
+***
+
+***Step 10***
+
+* Open the wallet and go to the Masternodes tab. Click on each new node and press "Start". 
+
+
+***Step 11***
+
+* Verify the node started by opening your VPS and typing this for each node (replace the number)
+
+    bitcorn-cli -conf=bitcorn_n1 getmasternodestatus
+
+If you get Status 4, everything is working.
+
+***
 
 ## How to Move a Masternode from one Multinode VPS to another Multinode VPS
 
@@ -301,6 +282,23 @@ Then start the masternode from your local wallet.
 If you did it successfully when you run the check masternode status command, it will return status 4 and show the new IP address.
 
 	bitcorn-cli -conf=bitcorn_n1 masternode status
+
+
+## Adding more MNs to your already existing chunk of BITCORN masternodes
+
+First make sure you are in the BITCORN-Multinode folder where the script is, type the command
+
+	cd BITCORN-Multinode
+
+Start the script
+
+```bash
+./install.sh
+```
+
+It will tell you how many masternodes are installed, and you will be given the opportunity to define how many *additional* nodes you want to install. If you already have two and want to install three more, simply type 3 and press enter
+
+After that, do the steps described in the main-installation part.
 
 
 ## How to update masternode core to a newer version
