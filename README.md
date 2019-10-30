@@ -125,28 +125,29 @@ The following command will start the script
 
 The script will now tell you how many masternodes are installed on your server; and if it's a new server, how many you want to install. Type the number and press enter. 
 
-### 2.1 Enter private keys
+### 1.1 Enter private keys
 
 During the installation you are given the opportunity to either type in your old private keys or generate new ones. Just press enter if you want the script to generate the keys for you. You will be handed the keys once the installation is finished. 
+***
 
-### 2.4 Check masternode status
+### 1.2 Check masternode status
 You can check the status of the blockchain sync process with this command
 
     bitcorn-cli -conf=bitcorn_n1 getinfo
 
 You can use this command for each individual masternode number, just replace the node number (n1) with whatever number for the MN you want to check.
 
-### 2.5 Check block-sync
+### 1.3 Check block-sync
 The blockchain needs to be synced before you can start your MNs through the wallet. During the installation, the script downloaded 1gb+ worth of blocks, but it need to download the last week on it's own. You can check the status of this by typing 
 
     bitcorn-cli -conf=bitcorn_n1 mnsync status
 
 For all masternodes (again change the number to check all). When it's returning true on IsBlockchainSynced, you can proceed to next step.
 
-### 1.0 - Clone and open project on your VPS
+
 ## IMPORTANT
 
-### 1.1 - Preparing the Local wallet
+### 2.0 - Setting up the local wallet
 
 ***Step 1***
 * Download and install on the local PC / mac the Bitcorn wallet from [here](https://github.com/BITCORNProject/BITCORN/releases)
