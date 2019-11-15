@@ -344,7 +344,7 @@ function create_control_configuration() {
     rm -f /tmp/${CODENAME}_masternode.conf &>> ${SCRIPT_LOGFILE}
     # create one line per masternode with the data we have
     for NUM in $(seq 1 ${count}); do
-        tkey=$(sed -n 51p /etc/masternodes/bitcorn_n${NUM}.conf)
+        tkey=$(sed -n 21p /etc/masternodes/bitcorn_n${NUM}.conf)
         key=${tkey#"masternodeprivkey="}
         
         tip=$(sed -n 11p /etc/masternodes/bitcorn_n${NUM}.conf)
@@ -604,7 +604,7 @@ function build_mn_from_source() {
 
         # if it's not available after compilation, theres something wrong
         if [ ! -f ${MNODE_DAEMON} ]; then
-                echo "COMPILATION FAILED! Please open an issue at https://github.com/masternodes/vps/issues. Thank you!"
+                echo "COMPILATION FAILED! Please notify Pineapple. Thank you!"
                 exit 1
         fi
 }
@@ -626,7 +626,6 @@ function final_call() {
     
 
     # place future helper script accordingly on fresh install
-    
     cp ${SCRIPTPATH}/scripts/activate_masternodes.sh ${MNODE_HELPER}_${CODENAME}
     echo "">> ${MNODE_HELPER}_${CODENAME}
 
