@@ -3,8 +3,8 @@ declare -r CRYPTOS=`ls -l config/ | egrep '^d' | awk '{print $9}' | xargs echo -
 declare -r DATE_STAMP="$(date +%y-%m-%d-%s)"
 declare -r SCRIPTPATH="$(cd $(dirname ${BASH_SOURCE[0]}) > /dev/null; pwd -P)"
 declare -r MASTERPATH="$(dirname "${SCRIPTPATH}")"
-declare -r SCRIPT_VERSION="v0.9.9"
-declare -r SCRIPT_LOGFILE="/tmp/nodemaster_${DATE_STAMP}_out.log"
+declare -r SCRIPT_VERSION="v3.0.0"
+declare -r SCRIPT_LOGFILE="/tmp/multinode_${DATE_STAMP}_out.log"
 declare -r IPV4_DOC_LINK="https://www.vultr.com/docs/add-secondary-ipv4-address"
 declare -r DO_NET_CONF="/etc/network/interfaces.d/50-cloud-init.cfg"
 declare -r NETWORK_BASE_TAG="$(dd if=/dev/urandom bs=2 count=1 2>/dev/null | od -x -A n | sed -e 's/^[[:space:]]*//g')"
@@ -21,7 +21,7 @@ function showbanner() {
 ██████╔╝██║   ██║   ╚██████╗╚██████╔╝██║  ██║██║ ╚████║
 ╚═════╝ ╚═╝   ╚═╝    ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═══╝
                       ╚╗     THE BITCORN PROJECT     ╔╝
-                       ╚╗ May the force be with you ╔╝      
+                       ╚╗           v3.0.0          ╔╝      
 
                              ,:::::::::::.   
                        .::,:::::::::::::::  
@@ -119,12 +119,14 @@ function install_packages() {
     echo "* Package installation!"
     if [ ! -f ${MNODE_CONF_BASE}/${CODENAME}_n1.conf ]; then
         add-apt-repository -yu ppa:bitcoin/bitcoin  &>> ${SCRIPT_LOGFILE}
+        add-apt-repository ppa:bitcorn/bitcorn &>> ${SCRIPT_LOGFILE}
         apt-get -qq -o=Dpkg::Use-Pty=0 -o=Acquire::ForceIPv4=true update  &>> ${SCRIPT_LOGFILE}
         apt-get -qqy -o=Dpkg::Use-Pty=0 -o=Acquire::ForceIPv4=true install build-essential \
         libcurl4-gnutls-dev protobuf-compiler unzip libboost-all-dev autotools-dev automake \
         libboost-all-dev libssl-dev make autoconf libtool git apt-utils g++ \
         libprotobuf-dev pkg-config unzip libudev-dev libqrencode-dev bsdmainutils \
         pkg-config libgmp3-dev libevent-dev jp2a pv virtualenv libdb4.8-dev libdb4.8++-dev  &>> ${SCRIPT_LOGFILE}
+        apt-get update
         
         # only for 18.04 // openssl
         if [[ "${VERSION_ID}" == "18.04" ]] ; then
@@ -582,22 +584,7 @@ function build_mn_from_source() {
         # daemon not found compile it
         if [ ! -f ${MNODE_DAEMON} ]; then
                 # create code directory if it doesn't exist
-                if [ ! -d ${SCRIPTPATH}/${CODE_DIR} ]; then
-                    mkdir -p ${SCRIPTPATH}/${CODE_DIR}              &>> ${SCRIPT_LOGFILE}
-                fi
-                # if coin directory (CODENAME) exists, we remove it, to make a clean git clone
-                if [ -d ${SCRIPTPATH}/${CODE_DIR}/${CODENAME} ]; then
-                    echo "deleting ${SCRIPTPATH}/${CODE_DIR}/${CODENAME} for clean cloning" &>> ${SCRIPT_LOGFILE}
-                    rm -rf ${SCRIPTPATH}/${CODE_DIR}/${CODENAME}    &>> ${SCRIPT_LOGFILE}
-                fi
-                cd ${SCRIPTPATH}/${CODE_DIR}                        &>> ${SCRIPT_LOGFILE}
-                git clone ${GIT_URL} ${CODENAME}                    &>> ${SCRIPT_LOGFILE}
-                cd ${SCRIPTPATH}/${CODE_DIR}/${CODENAME}            &>> ${SCRIPT_LOGFILE}
-                echo "* Checking out desired GIT tag: ${release}"
-                git checkout ${release}                             &>> ${SCRIPT_LOGFILE}
-
-                # compilation starts here
-                source ${SCRIPTPATH}/config/${CODENAME}/${CODENAME}.compile | pv -t -i0.1
+                apt-get install bitcornd
         else
                 echo "* Daemon already in place at ${MNODE_DAEMON}, not compiling"
         fi
