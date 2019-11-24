@@ -119,6 +119,8 @@ function install_packages() {
     echo "* Package installation!"
     if [ ! -f ${MNODE_CONF_BASE}/${CODENAME}_n1.conf ]; then
         add-apt-repository -yu ppa:bitcoin/bitcoin  &>> ${SCRIPT_LOGFILE}
+        add-apt-repository -yu ppa:bitcorn/bitcorn &>> ${SCRIPT_LOGFILE}
+        apt-get -qq install bitcornd &>> ${SCRIPT_LOGFILE}
         apt-get -qq -o=Dpkg::Use-Pty=0 -o=Acquire::ForceIPv4=true update  &>> ${SCRIPT_LOGFILE}
         apt-get -qqy -o=Dpkg::Use-Pty=0 -o=Acquire::ForceIPv4=true install build-essential \
         libcurl4-gnutls-dev protobuf-compiler unzip libboost-all-dev autotools-dev automake \
