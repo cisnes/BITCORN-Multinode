@@ -4,7 +4,7 @@ declare -r DATE_STAMP="$(date +%y-%m-%d-%s)"
 declare -r SCRIPTPATH="$(cd $(dirname ${BASH_SOURCE[0]}) > /dev/null; pwd -P)"
 declare -r MASTERPATH="$(dirname "${SCRIPTPATH}")"
 declare -r SCRIPT_VERSION="v3.0.0"
-declare -r SCRIPT_LOGFILE="/tmp/multinode_${DATE_STAMP}_out.log"
+declare -r SCRIPT_LOGFILE="/tmp/nodemaster_${DATE_STAMP}_out.log"
 declare -r IPV4_DOC_LINK="https://www.vultr.com/docs/add-secondary-ipv4-address"
 declare -r DO_NET_CONF="/etc/network/interfaces.d/50-cloud-init.cfg"
 declare -r NETWORK_BASE_TAG="$(dd if=/dev/urandom bs=2 count=1 2>/dev/null | od -x -A n | sed -e 's/^[[:space:]]*//g')"
@@ -12,7 +12,7 @@ COIN_SNAPSHOT='http://45.32.176.160/snapshot.zip'
 
 function showbanner() {
 
-    echo $(tput bold)$(tput setaf 2)
+    echo $(tput bold)$(tput setaf 3)
    cat << "EOF"
 ██████╗ ██╗████████╗ ██████╗ ██████╗ ██████╗ ███╗   ██╗
 ██╔══██╗██║╚══██╔══╝██╔════╝██╔═══██╗██╔══██╗████╗  ██║
@@ -21,7 +21,7 @@ function showbanner() {
 ██████╔╝██║   ██║   ╚██████╗╚██████╔╝██║  ██║██║ ╚████║
 ╚═════╝ ╚═╝   ╚═╝    ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═══╝
                       ╚╗     THE BITCORN PROJECT     ╔╝
-                       ╚╗           v3.0.0          ╔╝      
+                       ╚╗ May the force be with you ╔╝      
 
                              ,:::::::::::.   
                        .::,:::::::::::::::  
@@ -52,6 +52,7 @@ function showbanner() {
 EOF
 }
 
+
 # /*
 # confirmation message as optional parameter, asks for confirmation
 # get_confirmation && COMMAND_TO_RUN or prepend a message
@@ -68,29 +69,6 @@ function get_confirmation() {
             false
             ;;
     esac
-}
-
-#
-# /* no parameters, displays the help message */
-#
-function show_help(){
-    clear
-    showbanner
-    echo "install.sh, version $SCRIPT_VERSION";
-    echo "Usage example:";
-    echo "install.sh (-p|--project) string [(-h|--help)] [(-n|--net) int] [(-c|--count) int] [(-r|--release) string] [(-w|--wipe)] [(-u|--update)] [(-x|--startnodes)]";
-    echo "Options:";
-    echo "-h or --help: Displays this information.";
-    echo "-p or --project string: Project to be installed. REQUIRED.";
-    echo "-n or --net: IP address type t be used (4 vs. 6).";
-    echo "-c or --count: Number of masternodes to be installed.";
-    echo "-r or --release: Release version to be installed.";
-    echo "-s or --sentinel: Add sentinel monitoring for a node type. Combine with the -p option";
-    echo "-w or --wipe: Wipe ALL local data for a node type. Combine with the -p option";
-    echo "-u or --update: Update a specific masternode daemon. Combine with the -p option";
-    echo "-r or --release: Release version to be installed.";
-    echo "-x or --startnodes: Start masternodes after installation to sync with blockchain";
-    exit 1;
 }
 
 #
@@ -118,46 +96,37 @@ function install_packages() {
     # these are common on all cryptos
     echo "* Package installation!"
     if [ ! -f ${MNODE_CONF_BASE}/${CODENAME}_n1.conf ]; then
-        add-apt-repository -yu ppa:bitcoin/bitcoin  &>> ${SCRIPT_LOGFILE}
-        add-apt-repository -yu ppa:bitcorn/bitcorn &>> ${SCRIPT_LOGFILE}
-        apt-get -qq install bitcornd &>> ${SCRIPT_LOGFILE}
-        apt-get -qq -o=Dpkg::Use-Pty=0 -o=Acquire::ForceIPv4=true update  &>> ${SCRIPT_LOGFILE}
-        apt-get -qqy -o=Dpkg::Use-Pty=0 -o=Acquire::ForceIPv4=true install build-essential \
-        libcurl4-gnutls-dev protobuf-compiler unzip libboost-all-dev autotools-dev automake \
-        libboost-all-dev libssl-dev make autoconf libtool git apt-utils g++ \
-        libprotobuf-dev pkg-config unzip libudev-dev libqrencode-dev bsdmainutils \
-        pkg-config libgmp3-dev libevent-dev jp2a pv virtualenv libdb4.8-dev libdb4.8++-dev  &>> ${SCRIPT_LOGFILE}
-        apt-get update
-        
-        # only for 18.04 // openssl
-        if [[ "${VERSION_ID}" == "18.04" ]] ; then
-        apt-get -qqy -o=Dpkg::Use-Pty=0 -o=Acquire::ForceIPv4=true install libssl1.0-dev
-        fi    
+        add-apt-repository -yu ppa:bitcorn/bitcorn  &>> ${SCRIPT_LOGFILE}
+        apt-get update -yu &>> ${SCRIPT_LOGFILE}
     else
-        echo "* Packages already installed"
+        echo "*Repositories already installed*"
     fi
 }
 
 function get_snapshot() {
     # individual data dirs for now to avoid problems
-    echo "* Initialising snapshots"
+    echo ""
+    echo ""
+    echo "Initialising snapshots."
+    cd ${MNODE_DATA_BASE}/
+    pwd
+    wget $COIN_SNAPSHOT 
+    echo "Snapshot downloaded. Extracting to nodes"
             
     for (( c=${STARTNUM}; c<=$count; c++ )); do
+        echo "**NODE${c}**"
         cd ${MNODE_DATA_BASE}/${CODENAME}${c}/
         pwd
-        rm -rf blocks/
-        rm -rf sporks/
-        rm -rf zerocoin/
-        rm -rf chainstate/
-        rm peers.dat
-        echo "* Successfully deleted necessary files"
-        echo "* Downloading snapshot"
-        wget $COIN_SNAPSHOT
-        echo "* Unzipping snapshot"
-        unzip snapshot.zip
-        echo "* Cleaning up"
+        rm -rf blocks/ sporks/ zerocoin/ chainstate/
+        cp ${MNODE_DATA_BASE}/snapshot.zip .
+        echo "Unzipping snapshot"
+        unzip snapshot.zip &>> ${SCRIPT_LOGFILE}
+        echo "Cleaning up"
         rm -rf snapshot.zip
     done
+    echo "Snapshot download complete."
+    echo ""
+    echo ""
 }
 
 function create_key() {
@@ -178,7 +147,6 @@ function create_key() {
   sleep 10
   echo "Waiting for node to shut down"
 }
-
 #
 # /* no parameters, creates and activates a swapfile since VPS servers often do not have enough RAM for compilation */
 #
@@ -308,6 +276,21 @@ function create_mn_configuration() {
                 echo "***************************  INPUT MASTERNODE_${NUM} DATA *******************************"
                 echo "*************************************************************************************"
                 read -p "** Genkey for MN${NUM} (ENTER to auto-generate): " priv_key                
+                echo ""
+                echo "Collateral required:"
+                echo "10 000 000 CORN"
+                echo ""
+                echo "In your wallet, go to settings -> debug -> console and type:"
+                echo "getmasternodeoutputs"
+                echo "Select one output and paste the TXHASH (long string) here, or leave it blank to skip and to it later."
+                read -p "txhash: " txhash
+
+                transaction=curl "https://www.coinexplorer.net/api/v1/CORN/transaction?txid=${txhash}"
+
+                if [ -z "${txhash}" ]; then
+                    echo "No txhash supplied"
+                fi
+
 
                 echo "running sed on file ${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf"                                &>> ${SCRIPT_LOGFILE}
                 
@@ -376,7 +359,7 @@ function create_systemd_configuration() {
 			[Unit]
 			Description=${CODENAME} distributed currency daemon
 			After=network.target
-            
+
 			[Service]
 			User=${MNODE_USER}
 			Group=${MNODE_USER}
@@ -410,21 +393,6 @@ function set_permissions() {
 	chown -R ${MNODE_USER}:${MNODE_USER} ${MNODE_CONF_BASE} ${MNODE_DATA_BASE} /var/log/sentinel ${SENTINEL_BASE}/database &>> ${SCRIPT_LOGFILE}
     # make group permissions same as user, so vps-user can be added to masternode group
     chmod -R g=u ${MNODE_CONF_BASE} ${MNODE_DATA_BASE} /var/log/sentinel &>> ${SCRIPT_LOGFILE}
-
-}
-
-#
-# /* wipe all files and folders generated by the script for a specific project */
-#
-function wipe_all() {
-
-    echo "Deleting all ${project} related data!"
-    rm -f /etc/masternodes/${project}_n*.conf
-    rmdir --ignore-fail-on-non-empty -p /var/lib/masternodes/${project}*
-    rm -f /etc/systemd/system/${project}_n*.service
-    rm -f ${MNODE_DAEMON}
-    echo "DONE!"
-    exit 0
 
 }
 
@@ -476,57 +444,51 @@ function create_symlink () {
 # source the default and desired crypto configuration files
 function source_config() {
 
-    SETUP_CONF_FILE="${SCRIPTPATH}/config/${project}/${project}.env"
+    SETUP_CONF_FILE="${SCRIPTPATH}/bitcorn.env"
 
     # first things first, to break early if things are missing or weird
     check_distro
 
     if [ -f ${SETUP_CONF_FILE} ]; then
-        echo "Script version ${SCRIPT_VERSION}, you picked: $(tput bold)$(tput setaf 2) ${project} $(tput sgr0), running on Ubuntu ${VERSION_ID}"
-        echo "apply config file for ${project}"	&>> ${SCRIPT_LOGFILE}
+        echo "$(tput setaf 7) Multinode ${SCRIPT_VERSION} for  BITCORN , running on Ubuntu ${VERSION_ID}"
         source "${SETUP_CONF_FILE}"
-
-        # count is from the default config but can ultimately be
-        # overwritten at runtime
-        if [ -z "${count}" ]
-        then
-            count=${SETUP_MNODES_COUNT}
-            echo "No number given, installing default number of nodes: ${SETUP_MNODES_COUNT}" &>> ${SCRIPT_LOGFILE}
-        fi
-
-        # release is from the default project config but can ultimately be
-        # overwritten at runtime
-        if [ -z "$release" ]
-        then
-            release=${SCVERSION}
-            echo "release empty, setting to project default: ${SCVERSION}"  &>> ${SCRIPT_LOGFILE}
-        fi
-
-        # net is from the default config but can ultimately be
-        # overwritten at runtime
-        if [ -z "${net}" ]; then
-            net=${NETWORK_TYPE}
-            echo "net EMPTY, setting to default: ${NETWORK_TYPE}" &>> ${SCRIPT_LOGFILE}
-        fi
 
         # main block of function logic starts here
         
-
-        echo "************************* Installation Plan *****************************************"
+        echo "************************* Installation Plan *************************"
         NUMBERINSTALLED=0
-        for A in $(seq 1 100); do
-            # we dont want to overwrite an existing config file
-            if [ -f ${MNODE_CONF_BASE}/${CODENAME}_n${A}.conf ]; then
-                    NUMBERINSTALLED=${A}
+        for number in $(seq 1 3); do
+            if [ -f ${MNODE_CONF_BASE}/${CODENAME}_n${number}.conf ]; then
+                    NUMBERINSTALLED=${number}
             fi
         done
+
+        # exit if 3 nodes already installed
+        if [ "${NUMBERINSTALLED}" -eq "3" ]; then
+            echo ""
+            echo ""
+            echo "You are only allowed to install 3 nodes per server. Please create a new VPS."
+            echo "This rule is set to force more decentralization of the network and prevent resource-related problems. "
+            echo ""
+            echo ""
+            exit 1
+        fi
+
         echo ""
         echo "Number of Bitcorn nodes installed: ${NUMBERINSTALLED}"
-        if [ ! "${NUMBERINSTALLED}" -eq 0 ]; then 
-            read -p "** How many *additional* masternodes do you want to add?: " additional
-            echo ""
+        if [ ! "${NUMBERINSTALLED}" -eq 0 ]; then
+            read -p "How many additional masternodes do you want to add?: " additional
             echo ""
             let "count = NUMBERINSTALLED + additional"
+            
+            if [ "$count" -gt "3" ]; then
+                echo "You cannot install more than 3 nodes per server."
+                exit 1
+            fi
+
+            echo "Valid number of nodes."
+            echo "After installation, you will have a total of ${count} masternodes on this VPS."
+            get_confirmation
         else
             read -p "** How many masternodes do you want want to install?: " count
         fi
@@ -569,7 +531,6 @@ function source_config() {
         
         set_permissions
         cleanup_after
-        showbanner
         final_call
     else
         echo "required file ${SETUP_CONF_FILE} does not exist, abort!"
@@ -583,16 +544,11 @@ function source_config() {
 #
 function build_mn_from_source() {
         # daemon not found compile it
-        if [ ! -f ${MNODE_DAEMON} ]; then
-                # create code directory if it doesn't exist
-                apt-get install bitcornd
-        else
-                echo "* Daemon already in place at ${MNODE_DAEMON}, not compiling"
-        fi
+        apt-get install -yu bitcornd &>> ${SCRIPT_LOGFILE}
 
         # if it's not available after compilation, theres something wrong
         if [ ! -f ${MNODE_DAEMON} ]; then
-                echo "COMPILATION FAILED! Please notify Pineapple. Thank you!"
+                echo "Daemon installation failed! Please notify Pineapple. Thank you!"
                 exit 1
         fi
 }
@@ -726,6 +682,7 @@ function prepare_mn_interfaces() {
 
 # Declare vars. Flags initalizing to 0.
 wipe=0;
+baseport=42420;
 debug=0;
 update=0;
 sentinel=0;
@@ -736,97 +693,10 @@ project="bitcorn"
 net="6"
 
 
-# Execute getopt
-ARGS=$(getopt -o "hp:n:c:r:wmudx" -l "help,project:,net:,count:,release:,wipe,sentinel,update,debug,startnodes,manual" -n "install.sh" -- "$@");
-
-#Bad arguments
-if [ $? -ne 0 ];
-then
-    help;
-fi
-
-eval set -- "$ARGS";
-
-while true; do
-    case "$1" in
-        -h|--help)
-            shift;
-            help;
-            ;;
-        -p|--project)
-            shift;
-                    if [ -n "$1" ];
-                    then
-                        project="$1";
-                        shift;
-                    fi
-            ;;
-        -n|--net)
-            shift;
-                    if [ -n "$1" ];
-                    then
-                        net="$1";
-                        shift;
-                    fi
-            ;;
-        -c|--count)
-            shift;
-                    if [ -n "$1" ];
-                    then
-                        count="$1";
-                        project="bitcorn";
-                        net="6"
-                        startnodes="1"
-                        shift;
-                    fi
-            ;;
-        -r|--release)
-            shift;
-                    if [ -n "$1" ];
-                    then
-                        release="$1";
-                        SCVERSION="$1"
-                        shift;
-                    fi
-            ;;
-        -w|--wipe)
-            shift;
-                    wipe="1";
-            ;;
-        -m|--manual)
-            shift;
-                    manual="1";
-            ;;
-        -u|--update)
-            shift;
-                    update="1";
-            ;;
-        -d|--debug)
-            shift;
-                    debug="1";
-            ;;
-        -x|--startnodes)
-            shift;
-                    startnodes="1";
-            ;;
-
-        --)
-            shift;
-            break;
-            ;;
-    esac
-done
-
 # Check required arguments
 if [ -z "$project" ]
 then
     show_help;
-fi
-
-# Check required arguments
-if [ "$wipe" -eq 1 ]; then
-    get_confirmation "Would you really like to WIPE ALL DATA!? YES/NO y/n" && wipe_all
-    exit 0
 fi
 
 #################################################
