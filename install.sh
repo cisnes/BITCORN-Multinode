@@ -63,10 +63,10 @@ function get_confirmation() {
     case "$response" in
         [yY][eE][sS]|[yY])
             true
-            
             ;;
         *)
             false
+            exit 1
             ;;
     esac
 }
@@ -94,12 +94,13 @@ function check_distro() {
 function install_packages() {
     # development and build packages
     # these are common on all cryptos
-    echo "* Package installation!"
+    echo "Repository installation"
     if [ ! -f ${MNODE_CONF_BASE}/${CODENAME}_n1.conf ]; then
         add-apt-repository -yu ppa:bitcorn/bitcorn  &>> ${SCRIPT_LOGFILE}
         apt-get update -yu &>> ${SCRIPT_LOGFILE}
+        apt-get install -yu unzip &>> ${SCRIPT_LOGFILE}
     else
-        echo "*Repositories already installed*"
+        echo "Repositories already installed"
     fi
 }
 
@@ -122,9 +123,12 @@ function get_snapshot() {
         echo "Unzipping snapshot"
         unzip snapshot.zip &>> ${SCRIPT_LOGFILE}
         echo "Cleaning up"
-        rm -rf snapshot.zip
+        rm snapshot.zip
     done
-    echo "Snapshot download complete."
+
+    cd ${MNODE_DATA_BASE}/
+    rm snapshot.zip
+    echo "Snapshot installation complete."
     echo ""
     echo ""
 }
@@ -153,7 +157,7 @@ function create_key() {
 function swaphack() {
 #check if swap is available
 if [ $(free | awk '/^Swap:/ {exit !$2}') ] || [ ! -f "/var/mnode_swap.img" ];then
-    echo "* No proper swap, creating it"
+    echo "No swap on drive. Creating."
     # needed because ant servers are ants
     rm -f /var/mnode_swap.img
     dd if=/dev/zero of=/var/mnode_swap.img bs=1024k count=${MNODE_SWAPSIZE} &>> ${SCRIPT_LOGFILE}
@@ -164,7 +168,7 @@ if [ $(free | awk '/^Swap:/ {exit !$2}') ] || [ ! -f "/var/mnode_swap.img" ];the
     echo 'vm.swappiness=10' | tee -a /etc/sysctl.conf               &>> ${SCRIPT_LOGFILE}
     echo 'vm.vfs_cache_pressure=50' | tee -a /etc/sysctl.conf		&>> ${SCRIPT_LOGFILE}
 else
-    echo "* All good, we have a swap"
+    echo "Swap already made."
 fi
 }
 
@@ -189,7 +193,7 @@ function create_mn_user() {
 function create_mn_dirs() {
 
     # individual data dirs for now to avoid problems
-    echo "* Creating masternode directories"
+    echo "Creating masternode directories"
     mkdir -p ${MNODE_CONF_BASE}
     for NUM in $(seq 1 ${count}); do
         if [ ! -d "${MNODE_DATA_BASE}/${CODENAME}${NUM}" ]; then
@@ -205,7 +209,7 @@ function create_mn_dirs() {
 #
 function configure_firewall() {
 
-    echo "* Configuring firewall rules"
+    echo "Configuring firewall rules"
     # disallow everything except ssh and masternode inbound ports
     ufw default deny                          &>> ${SCRIPT_LOGFILE}
     ufw logging on                            &>> ${SCRIPT_LOGFILE}
@@ -215,7 +219,7 @@ function configure_firewall() {
     # This will only allow 6 connections every 30 seconds from the same IP address.
     ufw limit OpenSSH	                      &>> ${SCRIPT_LOGFILE}
     ufw --force enable                        &>> ${SCRIPT_LOGFILE}
-    echo "* Firewall ufw is active and enabled on system startup"
+    echo "Firewall ufw is active and enabled on system startup"
 
 }
 
@@ -224,7 +228,7 @@ function configure_firewall() {
 #
 function validate_netchoice() {
 
-    echo "* Validating network rules"
+    echo "Validating network rules"
 
     # break here of net isn't 4 or 6
     if [ ${net} -ne 4 ] && [ ${net} -ne 6 ]; then
@@ -234,7 +238,6 @@ function validate_netchoice() {
 
     # generate the required ipv6 config
     if [ "${net}" -eq 4 ]; then
-        IPV6_INT_BASE="#NEW_IPv4_ADDRESS_FOR_MASTERNODE_NUMBER"
         echo "IPv4 address generation needs to be done manually atm!"  &>> ${SCRIPT_LOGFILE}
     fi	# end ifneteq4
 
@@ -270,43 +273,59 @@ function create_mn_configuration() {
                     cp ${SCRIPTPATH}/config/default.conf ${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf                  &>> ${SCRIPT_LOGFILE}
                 fi
                 # replace placeholders
-                echo ""
-                echo ""
-                echo "*************************************************************************************"
-                echo "***************************  INPUT MASTERNODE_${NUM} DATA *******************************"
-                echo "*************************************************************************************"
-                read -p "** Genkey for MN${NUM} (ENTER to auto-generate): " priv_key                
-                echo ""
-                echo "Collateral required:"
-                echo "10 000 000 CORN"
-                echo ""
-                echo "In your wallet, go to settings -> debug -> console and type:"
-                echo "getmasternodeoutputs"
-                echo "Select one output and paste the TXHASH (long string) here, or leave it blank to skip and to it later."
-                read -p "txhash: " txhash
 
-                transaction=curl "https://www.coinexplorer.net/api/v1/CORN/transaction?txid=${txhash}"
-
-                if [ -z "${txhash}" ]; then
-                    echo "No txhash supplied"
-                fi
-
-
+                # running sed fro IP and PORT
+                NODEPORT=$(($baseport + $NUM - 1))
                 echo "running sed on file ${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf"                                &>> ${SCRIPT_LOGFILE}
                 
                 if [ "${manual}" -eq 1 ]; then
                     read -p "** IP for MN${NUM}: " manualip
                     echo ""
                     echo ""
-                    sed -e "s/XXX_GIT_PROJECT_XXX/${CODENAME}/" -e "s/XXX_NUM_XXX/${NUM}/" -e "s/XXX_PASS_XXX/${PASS}/" -e "s/XXX_IPV6_INT_BASE_XXX:XXX_NETWORK_BASE_TAG_XXX::XXX_NUM_XXY/${manualip}/" -e "s/XXX_MNODE_INBOUND_PORT_XXX/${MNODE_INBOUND_PORT}/" -i ${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf &>> ${SCRIPT_LOGFILE}
+                    sed -e "s/XXX_GIT_PROJECT_XXX/${CODENAME}/" -e "s/XXX_NUM_XXX/${NUM}/" -e "s/XXX_PASS_XXX/${PASS}/" -e "s/XXX_IPV4_XXX/${manualip}/" -e "s/XXX_MNODE_INBOUND_PORT_XXX/${NODEPORT}/" -i ${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf &>> ${SCRIPT_LOGFILE}
                 else
-                    sed -e "s/XXX_GIT_PROJECT_XXX/${CODENAME}/" -e "s/XXX_NUM_XXY/${NUM}]/" -e "s/XXX_NUM_XXX/${NUM}/" -e "s/XXX_PASS_XXX/${PASS}/" -e "s/XXX_IPV6_INT_BASE_XXX/[${IPV6_INT_BASE}/" -e "s/XXX_NETWORK_BASE_TAG_XXX/${NETWORK_BASE_TAG}/" -e "s/XXX_MNODE_INBOUND_PORT_XXX/${MNODE_INBOUND_PORT}/" -i ${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf &>> ${SCRIPT_LOGFILE}
+                    sed -e "s/XXX_GIT_PROJECT_XXX/${CODENAME}/" -e "s/XXX_NUM_XXX/${NUM}/" -e "s/XXX_PASS_XXX/${PASS}/" -e "s/XXX_IPV4_XXX/${IPV4}/" -e "s/XXX_MNODE_INBOUND_PORT_XXX/${NODEPORT}/" -i ${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf &>> ${SCRIPT_LOGFILE}
                 fi
+
+
+                echo ""
+                echo ""
+                echo "*************************************************************************************"
+                echo "****************************  INPUT MASTERNODE_${NUM} DATA *******************************"
+                echo "*************************************************************************************"
+                read -p "Genkey for MN${NUM} (ENTER to auto-generate): " priv_key                
+                
 
                 if [ -z "${priv_key}" ]; then
                     create_key
-                    echo "*Generated privkey is: ${priv_key}"
+                    echo "Generated privkey is: ${priv_key}"
                 fi
+                echo ""
+                echo "$(tput bold)$(tput setaf 3)Collateral required:"
+                echo "$(tput bold)$(tput setaf 3)10 000 000 CORN"
+                echo ""
+                echo "By now you should have sent 10 000 000 (10 MILLION) corn to a unique address in your wallet. If not, see step X.X in the guide."
+                echo "Please enter the wallet-address containing the 10mill for Masternode number ${NUM}"
+                read -p "address: " address
+
+                transaction=$(curl -s "45.32.176.160:42420/collateral?address=${address}")
+                outputid=${transaction: -1}
+                txhash=${transaction::-1}
+                echo "Checking for collateral"
+                
+                if [ "$transaction" != "Not found" ]; then
+                    echo "Collateral found. Proceeding"
+                fi
+                
+                echo "${transaction}"
+                if [ -z "${address}" ]; then
+                    echo "No txhash supplied"
+                fi
+
+
+                
+
+                
 
                 sed -e "s/XXX_priv_XXX/${priv_key}/" -i ${MNODE_CONF_BASE}/${CODENAME}_n${NUM}.conf &>> ${SCRIPT_LOGFILE}
                 if [ "$startnodes" -eq 1 ]; then
@@ -431,11 +450,18 @@ function cleanup_after() {
 function create_symlink () {
     cd /root/.bitcorn &>> ${SCRIPT_LOGFILE}
     for NUM in $(seq 1 ${count}); do
-        if [ ! -z bitcorn_n${NUM} ]; then
-            ln -s /etc/masternodes/bitcorn_n${NUM}.conf /root/.bitcorn/bitcorn_n${NUM} &>> ${SCRIPT_LOGFILE}
+        if [ ! -z {NUM} ]; then
+            ln -s /etc/masternodes/bitcorn_n${NUM}.conf /root/.bitcorn/${NUM} &>> ${SCRIPT_LOGFILE}
         fi
     done
 }
+
+#
+# /* project as parameter, creates the mnode administration toolset */
+#
+
+
+
 
 #
 # /* project as parameter, sources the project specific parameters and runs the main logic */
@@ -468,7 +494,7 @@ function source_config() {
             echo ""
             echo ""
             echo "You are only allowed to install 3 nodes per server. Please create a new VPS."
-            echo "This rule is set to force more decentralization of the network and prevent resource-related problems. "
+            echo "This rule is set to force more decentralization of the network and mitigate for resource-related problems issues."
             echo ""
             echo ""
             exit 1
@@ -568,7 +594,6 @@ function final_call() {
     echo "=> $(tput bold)$(tput setaf 2) All configuration files are in: ${MNODE_CONF_BASE} $(tput sgr0)"
     echo "=> $(tput bold)$(tput setaf 2) All Data directories are in: ${MNODE_DATA_BASE} $(tput sgr0)"
     
-
     # place future helper script accordingly on fresh install
     cp ${SCRIPTPATH}/scripts/activate_masternodes.sh ${MNODE_HELPER}_${CODENAME}
     echo "">> ${MNODE_HELPER}_${CODENAME}
@@ -621,61 +646,11 @@ function prepare_mn_interfaces() {
 
     # DO ipv6 fix, are we on DO?
     # check for DO network config file
-    if [ -f ${DO_NET_CONF} ]; then
-        # found the DO config
-        if ! grep -q "::8888" ${DO_NET_CONF}; then
-            echo "ipv6 fix not found, applying!"
-            sed -i '/iface eth0 inet6 static/a dns-nameservers 2001:4860:4860::8844 2001:4860:4860::8888 8.8.8.8 127.0.0.1' ${DO_NET_CONF} &>> ${SCRIPT_LOGFILE}
-            ifdown ${ETH_INTERFACE}; ifup ${ETH_INTERFACE}; &>> ${SCRIPT_LOGFILE}
-        fi
-    fi
-
-    IPV6_INT_BASE="$(ip -6 addr show dev ${ETH_INTERFACE} | grep inet6 | awk -F '[ \t]+|/' '{print $3}' | grep -v ^fe80 | grep -v ^::1 | cut -f1-4 -d':' | head -1)" &>> ${SCRIPT_LOGFILE}
+    
+    IPV4=$(ip addr | grep 'inet ' | grep -Ev 'inet 127|inet 192\.168|inet 10\.' | \
+            sed "s/[[:space:]]*inet \([0-9.]*\)\/.*/\1/")
 
     validate_netchoice
-    echo "IPV6_INT_BASE AFTER : ${IPV6_INT_BASE}" &>> ${SCRIPT_LOGFILE}
-
-    # user opted for ipv6 (default), so we have to check for ipv6 support
-    # check for vultr ipv6 box active
-    if [ -z "${IPV6_INT_BASE}" ] && [ ${net} -ne 4 ]; then
-        echo "No IPv6 support on the VPS but IPv6 is the setup default. Please switch to ipv4 with flag \"-n 4\" if you want to continue."
-        echo ""
-        echo "See the following link for instructions how to add multiple ipv4 addresses on vultr:"
-        echo "${IPV4_DOC_LINK}"
-        exit 1
-    fi
-
-    # generate the required ipv6 config
-    if [ "${net}" -eq 6 ]; then
-        # vultr specific, needed to work
-        sed -ie '/iface ${ETH_INTERFACE} inet6 auto/s/^/#/' ${NETWORK_CONFIG} &>> ${SCRIPT_LOGFILE}
-
-        # move current config out of the way first
-        cp ${NETWORK_CONFIG} ${NETWORK_CONFIG}.${DATE_STAMP}.bkp &>> ${SCRIPT_LOGFILE}
-
-        # create the additional ipv6 interfaces, rc.local because it's more generic
-        for NUM in $(seq 1 ${count}); do
-
-            # check if the interfaces exist
-            ip -6 addr | grep -qi "${IPV6_INT_BASE}:${NETWORK_BASE_TAG}::${NUM}"
-            if [ $? -eq 0 ]
-            then
-              echo "IP for masternode already exists, skipping creation" &>> ${SCRIPT_LOGFILE}
-            else
-              echo "Creating new IP address for ${CODENAME} masternode nr ${NUM}" &>> ${SCRIPT_LOGFILE}
-              if [ "${NETWORK_CONFIG}" = "/etc/rc.local" ]; then
-                # need to put network config in front of "exit 0" in rc.local
-                sed -e '$i ip -6 addr add '"${IPV6_INT_BASE}"':'"${NETWORK_BASE_TAG}"'::'"${NUM}"'/64 dev '"${ETH_INTERFACE}"'\n' -i ${NETWORK_CONFIG} &>> ${SCRIPT_LOGFILE}
-              else
-                # if not using rc.local, append normally
-                  echo "ip -6 addr add ${IPV6_INT_BASE}:${NETWORK_BASE_TAG}::${NUM}/64 dev ${ETH_INTERFACE}" >> ${NETWORK_CONFIG} &>> ${SCRIPT_LOGFILE}
-              fi
-              sleep 2
-              ip -6 addr add ${IPV6_INT_BASE}:${NETWORK_BASE_TAG}::${NUM}/64 dev ${ETH_INTERFACE} &>> ${SCRIPT_LOGFILE}
-            fi
-        done # end forloop
-    fi # end ifneteq6
-
 }
 
 ##################------------Menu()---------#####################################
@@ -690,8 +665,30 @@ startnodes=1;
 advanced=0;
 manual=0;
 project="bitcorn"
-net="6"
+net="4"
 
+ARGS=$(getopt -o "hp:n:c:r:wmudx" -l "help,project:,net:,count:,release:,wipe,sentinel,update,debug,startnodes,manual" -n "install.sh" -- "$@");
+
+#Bad arguments
+if [ $? -ne 0 ];
+then
+    help;
+fi
+
+eval set -- "$ARGS";
+
+while true; do
+    case "$1" in
+        -m|--manual)
+            shift;
+                    manual="1";
+            ;;
+        --)
+            shift;
+            break;
+            ;;
+    esac
+done
 
 # Check required arguments
 if [ -z "$project" ]
